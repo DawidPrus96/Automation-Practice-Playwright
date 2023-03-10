@@ -5,7 +5,13 @@ test.beforeEach(async ({ page }) => {
   await expect(page).toHaveURL('/')
 })
 
-test('Test Case 1: Register User', async ({ page }) => {
+// async function deleteUser({ page }) {
+//   await page.getByRole('link', { name: ' Delete Account' }).click()
+//   await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
+//   await page.locator('xpath=//a[@data-qa="continue-button"]').click()
+// }
+
+test('Test Case 1: Register User', async ({ page: page }, testInfo) => {
   const newUser = {
     name: 'testName',
     email: 'test@Email.Address',
@@ -25,12 +31,24 @@ test('Test Case 1: Register User', async ({ page }) => {
     zipcode: 'testZipcode',
     mobileNumber: 0,
   }
-
+  // deleteUser({ page })
   await page.getByRole('link', { name: 'Signup / Login' }).click()
   await expect(page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
   await page.locator('xpath=//input[@data-qa="signup-name"]').fill(newUser.name)
   await page.locator('xpath=//input[@data-qa="signup-email"]').fill(newUser.email)
   await page.locator('xpath=//button[@data-qa="signup-button"]').click()
+  const IsExistingAccount = await page.getByText('Email Address already exist!').isVisible()
+  if (IsExistingAccount) {
+    await page.locator('xpath=//input[@data-qa="login-email"]').fill(newUser.email)
+    await page.locator('xpath=//input[@data-qa="login-password"]').fill(newUser.password)
+    await page.locator('xpath=//button[@data-qa="login-button"]').click()
+    await page.getByRole('link', { name: 'Delete Account' }).click()
+    await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
+    await page.getByRole('link', { name: 'Signup / Login' }).click()
+    await page.locator('xpath=//input[@data-qa="signup-name"]').fill(newUser.name)
+    await page.locator('xpath=//input[@data-qa="signup-email"]').fill(newUser.email)
+    await page.locator('xpath=//button[@data-qa="signup-button"]').click()
+  }
   await expect(page.getByRole('heading', { name: 'ENTER ACCOUNT INFORMATION' })).toBeVisible()
   await page.locator(`xpath=//*[@data-qa="title" and @id="uniform-id_gender${newUser.gender}"]`).check()
   await page.locator('xpath=//input[@data-qa="password"]').fill(newUser.password)
@@ -55,8 +73,9 @@ test('Test Case 1: Register User', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'ACCOUNT CREATED!' })).toBeVisible()
   await page.locator('xpath=//a[@data-qa="continue-button"]').click()
   await expect(page.getByText(`Logged in as ${newUser.name}`, { exact: true })).toBeVisible()
-  await page.getByRole('link', { name: 'Delete Account' }).click()
-  await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
-  await page.locator('xpath=//a[@data-qa="continue-button"]').click()
+  // await page.getByRole('link', { name: 'Delete Account' }).click()
+  // await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
+  // await page.locator('xpath=//a[@data-qa="continue-button"]').click()
+  // deleteUser({ page })
   await expect(page).toHaveURL('/')
 });
