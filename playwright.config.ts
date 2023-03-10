@@ -54,7 +54,7 @@ export default defineConfig({
             // `--disable-extensions-except=C:/automatyzacja/Automation Practice/Playwright_NodeJS/chrome_ublock.crx`,
             // `--load-extension=C:/automatyzacja/Automation Practice/Playwright_NodeJS/chrome_ublock.crx`
           ],
-          headless: false
+          headless: true
         }
       },
 
