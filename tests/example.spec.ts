@@ -1,18 +1,62 @@
 import { test, expect } from '@playwright/test';
+test.use({ baseURL: 'https://automationexercise.com/' })
+test.beforeEach(async ({ page }) => {
+  await page.goto('/')
+  await expect(page).toHaveURL('/')
+})
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+test('Test Case 1: Register User', async ({ page }) => {
+  const newUser = {
+    name: 'testName',
+    email: 'test@Email.Address',
+    gender: 1, // 1 - male , 2 - female
+    password: 'zaq1@WSX',
+    dateOfBirth: new Date("1996-02-16"),
+    newsletter: true,
+    offers: true,
+    firstName: 'testFirstname',
+    lastName: 'testLastName',
+    company: 'testCompany',
+    address: 'testAddress',
+    address2: 'testAddress2',
+    country: 'United States',
+    state: 'testState',
+    city: 'testCity',
+    zipcode: 'testZipcode',
+    mobileNumber: 0,
+  }
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
-});
-
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
-
-  // Expects the URL to contain intro.
-  await expect(page).toHaveURL(/.*intro/);
+  await page.getByRole('link', { name: 'Signup / Login' }).click()
+  await expect(page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
+  await page.locator('xpath=//input[@data-qa="signup-name"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="signup-email"]').fill(newUser.email)
+  await page.locator('xpath=//button[@data-qa="signup-button"]').click()
+  await expect(page.getByRole('heading', { name: 'ENTER ACCOUNT INFORMATION' })).toBeVisible()
+  await page.locator(`xpath=//*[@data-qa="title" and @id="uniform-id_gender${newUser.gender}"]`).check()
+  await page.locator('xpath=//input[@data-qa="password"]').fill(newUser.password)
+  await page.locator('xpath=//select[@data-qa="days"]').selectOption(`${newUser.dateOfBirth.getDay()}`)
+  await page.locator('xpath=//select[@data-qa="months"]').selectOption(`${newUser.dateOfBirth.toLocaleString("en-US", { month: "long" })}`)
+  await page.locator('xpath=//select[@data-qa="years"]').selectOption(`${newUser.dateOfBirth.getFullYear()}`)
+  if (newUser.newsletter)
+    await page.getByRole('checkbox', { name: 'newsletter' }).check()
+  if (newUser.offers)
+    await page.getByRole('checkbox', { name: 'offers' }).check()
+  await page.locator('xpath=//input[@data-qa="first_name"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="last_name"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="company"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="address"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="address2"]').fill(newUser.name)
+  await page.locator('xpath=//select[@data-qa="country"]').selectOption(newUser.country)
+  await page.locator('xpath=//input[@data-qa="state"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="city"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="zipcode"]').fill(newUser.name)
+  await page.locator('xpath=//input[@data-qa="mobile_number"]').fill(newUser.name)
+  await page.locator('xpath=//button[@data-qa="create-account"]').click()
+  await expect(page.getByRole('heading', { name: 'ACCOUNT CREATED!' })).toBeVisible()
+  await page.locator('xpath=//a[@data-qa="continue-button"]').click()
+  await expect(page.getByText(`Logged in as ${newUser.name}`, { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Delete Account' }).click()
+  await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
+  await page.locator('xpath=//a[@data-qa="continue-button"]').click()
+  await expect(page).toHaveURL('/')
 });
