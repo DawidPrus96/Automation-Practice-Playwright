@@ -9,5 +9,8 @@
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.31.2"
+  },
+  "dependencies": {
+    "@cliqz/adblocker-playwright": "^1.26.2"
   }
 }
