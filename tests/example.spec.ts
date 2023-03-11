@@ -147,10 +147,11 @@ test('Test Case 6: Contact Us Form', async ({ page }) => {
 test('Test Case 7: Verify Test Cases Page', async ({ page }) => {
   await page.getByRole('banner')
     .getByRole('link', { name: 'Test Cases' }).click()
-  await expect(page.getByRole('heading', { name: 'TEST CASES' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'TEST CASES', exact: true })).toBeVisible()
 });
 test('Test Case 8: Verify All Products and product detail page', async ({ page }) => {
-  await page.getByRole('link', { name: 'Products' }).click()
+  await page.getByRole('banner')
+    .getByRole('link', { name: 'Products' }).click()
   await expect(page.getByRole('heading', { name: 'ALL PRODUCTS' })).toBeVisible()
   await expect(page.locator('xpath=//div[@class="features_items"]')).toBeVisible()
   await page.locator('xpath=//div[@class="product-image-wrapper"]').getByRole('link', { name: 'view product' }).first().click()
