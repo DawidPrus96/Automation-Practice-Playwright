@@ -50,7 +50,7 @@ test('Test Case 1: Register User', async ({ page }) => {
     await page.locator('xpath=//*[@data-qa="signup-button"]').click()
   }
   await expect(page.getByRole('heading', { name: 'ENTER ACCOUNT INFORMATION' })).toBeVisible()
-  await page.locator(`xpath*data-qa="title" and @id="uniform-id_gender${newUser.gender}"]`).check()
+  await page.locator(`xpath=//*[@data-qa="title" and @id="uniform-id_gender${newUser.gender}"]`).check()
   await page.locator('xpath=//*[@data-qa="password"]').fill(newUser.password)
   await page.locator('xpath=//*[@data-qa="days"]').selectOption(`${newUser.dateOfBirth.getDay()}`)
   await page.locator('xpath=//*[@data-qa="months"]').selectOption(`${newUser.dateOfBirth.toLocaleString("en-US", { month: "long" })}`)
