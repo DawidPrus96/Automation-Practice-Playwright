@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 //   await page.locator('xpath=//a[@data-qa="continue-button"]').click()
 // }
 
-test('Test Case 1: Register User', async ({ page: page }, testInfo) => {
+test('Test Case 1: Register User', async ({ page }) => {
   const newUser = {
     name: 'testName',
     email: 'test@Email.Address',
@@ -73,9 +73,52 @@ test('Test Case 1: Register User', async ({ page: page }, testInfo) => {
   await expect(page.getByRole('heading', { name: 'ACCOUNT CREATED!' })).toBeVisible()
   await page.locator('xpath=//a[@data-qa="continue-button"]').click()
   await expect(page.getByText(`Logged in as ${newUser.name}`, { exact: true })).toBeVisible()
-  // await page.getByRole('link', { name: 'Delete Account' }).click()
-  // await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
-  // await page.locator('xpath=//a[@data-qa="continue-button"]').click()
+  await page.getByRole('link', { name: 'Delete Account' }).click()
+  await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
+  await page.locator('xpath=//a[@data-qa="continue-button"]').click()
   // deleteUser({ page })
   await expect(page).toHaveURL('/')
+});
+
+test('Test Case 2: Login User with correct email and password with TC004 instead of account deletion', async ({ page }) => {
+  const correctUser = {
+    name: 'correctName',
+    email: 'correct@mail.address',
+    password: 'correctPassword',
+  }
+  await page.getByRole('link', { name: 'Signup / Login' }).click()
+  await expect(page.getByRole('heading', { name: 'Login to your account' })).toBeVisible()
+  await page.locator('xpath=//input[@data-qa="login-email"]').fill(correctUser.email)
+  await page.locator('xpath=//input[@data-qa="login-password"]').fill(correctUser.password)
+  await page.locator('xpath=//button[@data-qa="login-button"]').click()
+  await expect(page.getByText(`Logged in as ${correctUser.name}`, { exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'logout' }).click()
+  await expect(page).toHaveURL('/login')
+
+});
+test('Test Case 3: Login User with correct email and password', async ({ page }) => {
+  const incorrectUser = {
+    name: 'incorrectName',
+    email: 'incorrect@email.address',
+    password: 'incorrectPassword',
+  }
+  await page.getByRole('link', { name: 'Signup / Login' }).click()
+  await expect(page.getByRole('heading', { name: 'Login to your account' })).toBeVisible()
+  await page.locator('xpath=//input[@data-qa="login-email"]').fill(incorrectUser.email)
+  await page.locator('xpath=//input[@data-qa="login-password"]').fill(incorrectUser.password)
+  await page.locator('xpath=//button[@data-qa="login-button"]').click()
+  await expect(page.getByText('Your email or password is incorrect!')).toBeVisible()
+});
+test('Test Case 5: Register User with existing email', async ({ page }) => {
+  const correctUser = {
+    name: 'correctName',
+    email: 'correct@mail.address',
+    password: 'correctPassword',
+  }
+  await page.getByRole('link', { name: 'Signup / Login' }).click()
+  await expect(page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
+  await page.locator('xpath=//input[@data-qa="signup-name"]').fill(correctUser.name)
+  await page.locator('xpath=//input[@data-qa="signup-email"]').fill(correctUser.email)
+  await page.locator('xpath=//button[@data-qa="signup-button"]').click()
+  await expect(page.getByText('Email Address already exist!')).toBeVisible()
 });
