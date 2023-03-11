@@ -145,7 +145,8 @@ test('Test Case 6: Contact Us Form', async ({ page }) => {
   await expect(page).toHaveURL('/')
 });
 test('Test Case 7: Verify Test Cases Page', async ({ page }) => {
-  await page.getByRole('link', { name: 'Test Cases' }).click()
+  await page.getByRole('banner')
+    .getByRole('link', { name: 'Test Cases' }).click()
   await expect(page.getByRole('heading', { name: 'TEST CASES' })).toBeVisible()
 });
 test('Test Case 8: Verify All Products and product detail page', async ({ page }) => {
