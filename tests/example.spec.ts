@@ -170,3 +170,18 @@ test('Test Case 8: Verify All Products and product detail page', async ({ page }
   await expect(productDetails.getByText('Condition: ')).toBeVisible()
   await expect(productDetails.getByText('Brand: ')).toBeVisible()
 });
+
+test.only('Test Case 9: Search Product', async ({ page }) => {
+  let productName = 'blue'
+  let regexProductName = new RegExp(productName, "i")
+  await page.getByRole('banner')
+    .getByRole('link', { name: 'Products' }).click()
+  await expect(page.getByRole('heading', { name: 'ALL PRODUCTS' })).toBeVisible()
+  await expect(page.locator('xpath=//div[@class="features_items"]')).toBeVisible()
+  await page.getByPlaceholder('Search Product').fill(productName);
+  await page.locator('xpath=//button[@id="submit_search"]').click()
+  let allSearchedProducts = await page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p`).count()
+  let correctSearchedProducts = await page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p[contains(text(),${regexProductName})]`).count()
+  //console.log(`poprawne: ${correctSearchedProducts} \nwszystkie: ${allSearchedProducts}`)
+  expect(allSearchedProducts).toEqual(correctSearchedProducts)
+});
