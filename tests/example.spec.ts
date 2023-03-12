@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 test.use({ baseURL: 'https://automationexercise.com/' })
 test.beforeEach(async ({ page }) => {
   page.route('**/*', request => {
-    return request.request().url().startsWith('https://googleads')
+    return request.request().url().startsWith('https://googleads' || 'https://pagead2' || 'https://adservice')
       ? request.abort() :
       request.continue();
   })
@@ -171,7 +171,7 @@ test('Test Case 8: Verify All Products and product detail page', async ({ page }
   await expect(productDetails.getByText('Brand: ')).toBeVisible()
 });
 
-test.only('Test Case 9: Search Product', async ({ page }) => {
+test('Test Case 9: Search Product', async ({ page }) => {
   let productName = 'blue'
   let regexProductName = new RegExp(productName, "i")
   await page.getByRole('banner')
@@ -184,4 +184,74 @@ test.only('Test Case 9: Search Product', async ({ page }) => {
   let correctSearchedProducts = await page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p[contains(text(),${regexProductName})]`).count()
   //console.log(`poprawne: ${correctSearchedProducts} \nwszystkie: ${allSearchedProducts}`)
   expect(allSearchedProducts).toEqual(correctSearchedProducts)
+});
+test('Test Case 10: Verify Subscription in home page', async ({ page }) => {
+  let email = 'test@test.test'
+  let footer = page.locator('xpath=//div[@class="footer-widget"]')
+  await expect(footer.getByRole('heading', { name: 'Subscription' })).toBeVisible()
+  await footer.getByRole('textbox').fill(email)
+  await footer.getByRole('button').click()
+  await expect(footer.getByText('You have been successfully subscribed!')).toBeVisible()
+});
+test('Test Case 11: Verify Subscription in Cart page', async ({ page }) => {
+  let email = 'test@test.test'
+  let footer = page.locator('xpath=//div[@class="footer-widget"]')
+  await page.getByRole('banner')
+    .getByRole('link', { name: 'Cart' }).click()
+  await expect(footer.getByRole('heading', { name: 'Subscription' })).toBeVisible()
+  await footer.getByRole('textbox').fill(email)
+  await footer.getByRole('button').click()
+  await expect(footer.getByText('You have been successfully subscribed!')).toBeVisible()
+});
+test('Test Case 12: Add Products in Cart', async ({ page }) => {
+  await page.getByRole('banner')
+    .getByRole('link', { name: 'Products' }).click()
+  await expect(page.getByRole('heading', { name: 'ALL PRODUCTS' })).toBeVisible()
+  await expect(page.locator('xpath=//div[@class="features_items"]')).toBeVisible()
+  const firstItem = {
+    name: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('paragraph').first().textContent(),
+    price: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('heading').first().textContent()
+  }
+  console.log(`poprawne: ${firstItem.name} \nwszystkie: ${firstItem.price}`)
+  const secondItem = {
+    name: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('paragraph').nth(1).textContent(),
+    price: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('heading').nth(1).textContent()
+  }
+  console.log(`poprawne: ${secondItem.name} \nwszystkie: ${secondItem.price}`)
+  await page.locator('xpath=//div[contains(@class, "productinfo")]/a[contains(text(), "Add to cart")]').first().hover()
+  await page.locator('xpath=//div[contains(@class, "overlay-content")]/a[contains(text(), "Add to cart")]').first().click()
+  await page.getByRole('button', { name: 'Continue Shopping' }).click()
+  await page.locator('xpath=//div[contains(@class, "productinfo")]/a[contains(text(), "Add to cart")]').nth(1).hover()
+  await page.locator('xpath=//div[contains(@class, "overlay-content")]/a[contains(text(), "Add to cart")]').nth(1).click()
+  await page.getByRole('link', { name: 'View Cart' }).click()
+  await expect(page
+    .getByRole('row')).toHaveCount(3)
+  await expect(page
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(1)
+    .filter({ hasText: `${firstItem.name}` })).toBeVisible()
+  await expect(page
+    .getByRole('row').nth(2)
+    .getByRole('cell').nth(1)
+    .filter({ hasText: `${secondItem.name}` })).toBeVisible()
+  await expect(page
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(2)
+    .filter({ hasText: `${firstItem.price}` })).toBeVisible()
+  await expect(page
+    .getByRole('row').nth(2)
+    .getByRole('cell').nth(2)
+    .filter({ hasText: `${secondItem.price}` })).toBeVisible()
+  await expect(page
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(3)).toHaveText('1')
+  await expect(page
+    .getByRole('row').nth(2)
+    .getByRole('cell').nth(3)).toHaveText('1')
+  await expect(page
+    .getByRole('row').nth(1)
+    .filter({ hasText: `${firstItem.price}` })).toBeVisible()
+  await expect(page
+    .getByRole('row').nth(2)
+    .filter({ hasText: `${secondItem.price}` })).toBeVisible()
 });
