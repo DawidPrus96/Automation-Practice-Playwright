@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 test.use({ baseURL: 'https://automationexercise.com/' })
 test.beforeEach(async ({ page }) => {
+  page.route('**/*', request => {
+    return request.request().url().startsWith('https://googleads')
+      ? request.abort() :
+      request.continue();
+  })
   await page.goto('/')
   await expect(page).toHaveURL('/')
 })
@@ -145,9 +150,10 @@ test('Test Case 6: Contact Us Form', async ({ page }) => {
   await expect(page).toHaveURL('/')
 });
 test('Test Case 7: Verify Test Cases Page', async ({ page }) => {
+
   await page.getByRole('banner')
     .getByRole('link', { name: 'Test Cases' }).click()
-  await expect(page.getByRole('heading', { name: 'TEST CASES', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Test Cases', exact: true })).toBeVisible()
 });
 test('Test Case 8: Verify All Products and product detail page', async ({ page }) => {
   await page.getByRole('banner')
