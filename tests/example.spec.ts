@@ -20,7 +20,7 @@ test('Test Case 1: Register User', async ({ page }) => {
   const newUser = {
     name: 'testName',
     email: 'test@Email.Address',
-    gender: 1, // 1 - male , 2 - female
+    gender: 'Mr.', // Mr. or Mrs.
     password: 'zaq1@WSX',
     dateOfBirth: new Date("1996-02-16"),
     newsletter: true,
@@ -55,7 +55,7 @@ test('Test Case 1: Register User', async ({ page }) => {
     await page.locator('xpath=//*[@data-qa="signup-button"]').click()
   }
   await expect(page.getByRole('heading', { name: 'ENTER ACCOUNT INFORMATION' })).toBeVisible()
-  await page.locator(`xpath=//*[@data-qa="title" and @id="uniform-id_gender${newUser.gender}"]`).check()
+  await page.getByLabel(newUser.gender).check()
   await page.locator('xpath=//*[@data-qa="password"]').fill(newUser.password)
   await page.locator('xpath=//*[@data-qa="days"]').selectOption(`${newUser.dateOfBirth.getDay()}`)
   await page.locator('xpath=//*[@data-qa="months"]').selectOption(`${newUser.dateOfBirth.toLocaleString("en-US", { month: "long" })}`)
@@ -64,16 +64,16 @@ test('Test Case 1: Register User', async ({ page }) => {
     await page.getByRole('checkbox', { name: 'newsletter' }).check()
   if (newUser.offers)
     await page.getByRole('checkbox', { name: 'offers' }).check()
-  await page.locator('xpath=//*[@data-qa="first_name"]').fill(newUser.name)
-  await page.locator('xpath=//*[@data-qa="last_name"]').fill(newUser.name)
-  await page.locator('xpath=//*[@data-qa="company"]').fill(newUser.name)
-  await page.locator('xpath=//*[@data-qa="address"]').fill(newUser.name)
-  await page.locator('xpath=//*[@data-qa="address2"]').fill(newUser.name)
+  await page.locator('xpath=//*[@data-qa="first_name"]').fill(newUser.firstName)
+  await page.locator('xpath=//*[@data-qa="last_name"]').fill(newUser.lastName)
+  await page.locator('xpath=//*[@data-qa="company"]').fill(newUser.company)
+  await page.locator('xpath=//*[@data-qa="address"]').fill(newUser.address)
+  await page.locator('xpath=//*[@data-qa="address2"]').fill(newUser.address2)
   await page.locator('xpath=//*[@data-qa="country"]').selectOption(newUser.country)
-  await page.locator('xpath=//*[@data-qa="state"]').fill(newUser.name)
-  await page.locator('xpath=//*[@data-qa="city"]').fill(newUser.name)
-  await page.locator('xpath=//*[@data-qa="zipcode"]').fill(newUser.name)
-  await page.locator('xpath=//*[@data-qa="mobile_number"]').fill(newUser.name)
+  await page.locator('xpath=//*[@data-qa="state"]').fill(newUser.state)
+  await page.locator('xpath=//*[@data-qa="city"]').fill(newUser.city)
+  await page.locator('xpath=//*[@data-qa="zipcode"]').fill(newUser.zipcode)
+  await page.locator('xpath=//*[@data-qa="mobile_number"]').fill(`${newUser.mobileNumber}`)
   await page.locator('xpath=//*[@data-qa="create-account"]').click()
   await expect(page.getByRole('heading', { name: 'ACCOUNT CREATED!' })).toBeVisible()
   await page.locator('xpath=//*[@data-qa="continue-button"]').click()
@@ -196,7 +196,8 @@ test('Test Case 10: Verify Subscription in home page', async ({ page }) => {
 test('Test Case 11: Verify Subscription in Cart page', async ({ page }) => {
   let email = 'test@test.test'
   let footer = page.locator('xpath=//div[@class="footer-widget"]')
-  await page.getByRole('banner')
+  await page
+    .getByRole('banner')
     .getByRole('link', { name: 'Cart' }).click()
   await expect(footer.getByRole('heading', { name: 'Subscription' })).toBeVisible()
   await footer.getByRole('textbox').fill(email)
@@ -247,4 +248,142 @@ test('Test Case 13: Verify Product quantity in Cart', async ({ page }) => {
   expect(Number(await page
     .getByRole('row').nth(1)
     .getByRole('cell').nth(3).innerText())).toEqual(quantity)
+});
+test.only('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
+  const newUser = {
+    name: 'testName',
+    email: 'test@Email.Address',
+    gender: 'Mr.', // Mr. or Mrs.
+    password: 'zaq1@WSX',
+    dateOfBirth: new Date("1996-02-16"),
+    newsletter: true,
+    offers: true,
+    firstName: 'testFirstname',
+    lastName: 'testLastName',
+    company: 'testCompany',
+    address: 'testAddress',
+    address2: 'testAddress2',
+    country: 'United States',
+    state: 'testState',
+    city: 'testCity',
+    zipcode: 'testZipcode',
+    mobileNumber: 0,
+    cardName: 'testCardName',
+    cardNumber: 4242424242424242,
+    cardCVC: 551,
+    cardExpirationMonth: 10,
+    cardExpirationYear: 2025,
+  }
+  await page
+    .locator('xpath=//div[contains(@class, "productinfo")]')
+    .getByText('Add to cart').first().click()
+  let itemName = await page
+    .locator('xpath=//div[contains(@class, "productinfo")]')
+    .getByRole('paragraph').first().textContent()
+  let itemPrice = Number((await page
+    .locator('xpath=//div[contains(@class, "productinfo")]')
+    .getByRole('heading').first().textContent())?.substring(3))
+  let itemQuantity = 1
+  await page.getByRole('button', { name: 'Continue Shopping' }).click()
+  await page
+    .getByRole('banner')
+    .getByRole('link', { name: 'Cart' }).click()
+  await expect(page).toHaveURL('/view_cart')
+  await page.getByText('Proceed To Checkout').click()
+  await page.getByRole('link', { name: 'Register / Login' }).click()
+  await expect(page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
+  await page.locator('xpath=//*[@data-qa="signup-name"]').fill(newUser.name)
+  await page.locator('xpath=//*[@data-qa="signup-email"]').fill(newUser.email)
+  await page.locator('xpath=//*[@data-qa="signup-button"]').click()
+  const IsExistingAccount = await page.getByText('Email Address already exist!').isVisible()
+  if (IsExistingAccount) {
+    await page.locator('xpath=//*[@data-qa="login-email"]').fill(newUser.email)
+    await page.locator('xpath=//*[@data-qa="login-password"]').fill(newUser.password)
+    await page.locator('xpath=//*[@data-qa="login-button"]').click()
+    await page.getByRole('link', { name: 'Delete Account' }).click()
+    await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
+    await page.getByRole('link', { name: 'Signup / Login' }).click()
+    await page.locator('xpath=//*[@data-qa="signup-name"]').fill(newUser.name)
+    await page.locator('xpath=//*[@data-qa="signup-email"]').fill(newUser.email)
+    await page.locator('xpath=//*[@data-qa="signup-button"]').click()
+  }
+  await expect(page.getByRole('heading', { name: 'ENTER ACCOUNT INFORMATION' })).toBeVisible()
+  await page.getByLabel(newUser.gender).check()
+  await page.locator('xpath=//*[@data-qa="password"]').fill(newUser.password)
+  await page.locator('xpath=//*[@data-qa="days"]').selectOption(`${newUser.dateOfBirth.getDay()}`)
+  await page.locator('xpath=//*[@data-qa="months"]').selectOption(`${newUser.dateOfBirth.toLocaleString("en-US", { month: "long" })}`)
+  await page.locator('xpath=//*[@data-qa="years"]').selectOption(`${newUser.dateOfBirth.getFullYear()}`)
+  if (newUser.newsletter)
+    await page.getByRole('checkbox', { name: 'newsletter' }).check()
+  if (newUser.offers)
+    await page.getByRole('checkbox', { name: 'offers' }).check()
+  await page.locator('xpath=//*[@data-qa="first_name"]').fill(newUser.firstName)
+  await page.locator('xpath=//*[@data-qa="last_name"]').fill(newUser.lastName)
+  await page.locator('xpath=//*[@data-qa="company"]').fill(newUser.company)
+  await page.locator('xpath=//*[@data-qa="address"]').fill(newUser.address)
+  await page.locator('xpath=//*[@data-qa="address2"]').fill(newUser.address2)
+  await page.locator('xpath=//*[@data-qa="country"]').selectOption(newUser.country)
+  await page.locator('xpath=//*[@data-qa="state"]').fill(newUser.state)
+  await page.locator('xpath=//*[@data-qa="city"]').fill(newUser.city)
+  await page.locator('xpath=//*[@data-qa="zipcode"]').fill(newUser.zipcode)
+  await page.locator('xpath=//*[@data-qa="mobile_number"]').fill(`${newUser.mobileNumber}`)
+  await page.locator('xpath=//*[@data-qa="create-account"]').click()
+  await expect(page.getByRole('heading', { name: 'ACCOUNT CREATED!' })).toBeVisible()
+  await page.locator('xpath=//*[@data-qa="continue-button"]').click()
+  await expect(page.getByText(`Logged in as ${newUser.name}`, { exact: true })).toBeVisible()
+  await expect(page).toHaveURL('/')
+  await page
+    .getByRole('banner')
+    .getByRole('link', { name: 'Cart' }).click()
+  await expect(page).toHaveURL('/view_cart')
+  await page.getByText('Proceed To Checkout').click()
+  await expect(page.getByRole('list').filter({ hasText: 'delivery address' })).toContainText(
+    newUser.gender &&
+    newUser.firstName &&
+    newUser.lastName &&
+    newUser.company &&
+    newUser.address &&
+    newUser.address2 &&
+    newUser.city &&
+    newUser.state &&
+    newUser.zipcode &&
+    newUser.country &&
+    `${newUser.mobileNumber}`
+  )
+  await expect(page
+    .locator('xpath=//div[@id="cart_info"]')
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(1)).toContainText(`${itemName}`)
+  await expect(page
+    .locator('xpath=//div[@id="cart_info"]')
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(2)).toContainText(`${itemPrice}`)
+  await expect(page
+    .locator('xpath=//div[@id="cart_info"]')
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(3)).toContainText(`${itemQuantity}`)
+  await expect(page
+    .locator('xpath=//div[@id="cart_info"]')
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(4)).toContainText(`${itemPrice * itemQuantity}`)
+  await expect(page
+    .locator('xpath=//div[@id="cart_info"]')
+    .getByRole('row').nth(2)
+    .getByRole('cell').nth(3)).toContainText(`${itemPrice * itemQuantity}`)
+  await page.getByRole('textbox').first().fill('Test description')
+  await page.getByRole('link', { name: 'place order' }).click()
+  await page.locator('xpath=//*[@data-qa="name-on-card"]').fill(newUser.cardName)
+  await page.locator('xpath=//*[@data-qa="card-number"]').fill(newUser.cardName)
+  await page.locator('xpath=//*[@data-qa="cvc"]').fill(newUser.cardName)
+  await page.locator('xpath=//*[@data-qa="expiry-month"]').fill(newUser.cardName)
+  await page.locator('xpath=//*[@data-qa="expiry-year"]').fill(newUser.cardName)
+  await page.locator('xpath=//*[@data-qa="pay-button"]').click()
+  await expect(page.getByText('Your order has been placed successfully!')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Order placed' })).toBeVisible()
+  await page.getByRole('link', { name: 'continue' }).click()
+  await expect(page).toHaveURL('/')
+  await page.getByRole('link', { name: 'Delete Account' }).click()
+  await expect(page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
+  await page.locator('xpath=//*[@data-qa="continue-button"]').click()
+  await expect(page).toHaveURL('/')
 });
