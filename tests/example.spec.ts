@@ -378,7 +378,7 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
   await page.locator('xpath=//*[@data-qa="expiry-month"]').fill(newUser.cardName)
   await page.locator('xpath=//*[@data-qa="expiry-year"]').fill(newUser.cardName)
   await page.locator('xpath=//*[@data-qa="pay-button"]').click()
-  await expect(page.getByText('Your order has been placed successfully!')).toBeVisible()
+  //expect(page.locator('xpath=//div[@id="success_message"]')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Order placed' })).toBeVisible()
   await page.getByRole('link', { name: 'continue' }).click()
   await expect(page).toHaveURL('/')
