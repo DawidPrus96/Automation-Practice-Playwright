@@ -160,7 +160,7 @@ test('Test Case 8: Verify All Products and product detail page', async ({ page }
     .getByRole('link', { name: 'Products' }).click()
   await expect(page.getByRole('heading', { name: 'ALL PRODUCTS' })).toBeVisible()
   await expect(page.locator('xpath=//div[@class="features_items"]')).toBeVisible()
-  await page.locator('xpath=//div[@class="product-image-wrapper"]').getByRole('link', { name: 'view product' }).first().click()
+  await page.getByRole('link', { name: 'view product' }).first().click()
   await expect(page).toHaveURL(/\/product_details\//)
   let productDetails = page.locator('xpath=//div[@class="product-information"]')
   await expect(productDetails.getByRole('heading')).toBeVisible()
@@ -203,7 +203,7 @@ test('Test Case 11: Verify Subscription in Cart page', async ({ page }) => {
   await footer.getByRole('button').click()
   await expect(footer.getByText('You have been successfully subscribed!')).toBeVisible()
 });
-test.only('Test Case 12: Add Products in Cart', async ({ page }) => {
+test('Test Case 12: Add Products in Cart', async ({ page }) => {
   const items: { name: any, price: any }[] = []
   const howManyItems = 2
   await page.getByRole('banner')
@@ -236,4 +236,15 @@ test.only('Test Case 12: Add Products in Cart', async ({ page }) => {
     expect(totalPrice).toEqual(items[i].price * count)
     i++
   }
+});
+test('Test Case 13: Verify Product quantity in Cart', async ({ page }) => {
+  let quantity = 4
+  await page.getByRole('link', { name: 'view product' }).first().click()
+  await expect(page.locator('xpath=//div[@class="product-information"]')).toBeVisible()
+  await page.locator('xpath=//*[@id="quantity"]').fill(`${quantity}`)
+  await page.getByRole('button', { name: 'Add to cart' }).click()
+  await page.getByRole('link', { name: 'View Cart' }).click()
+  expect(Number(await page
+    .getByRole('row').nth(1)
+    .getByRole('cell').nth(3).innerText())).toEqual(quantity)
 });
