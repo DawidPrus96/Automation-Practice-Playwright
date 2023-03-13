@@ -249,7 +249,7 @@ test('Test Case 13: Verify Product quantity in Cart', async ({ page }) => {
     .getByRole('row').nth(1)
     .getByRole('cell').nth(3).innerText())).toEqual(quantity)
 });
-test.only('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
+test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
   const newUser = {
     name: 'testName',
     email: 'test@Email.Address',
