@@ -203,7 +203,7 @@ test('Test Case 11: Verify Subscription in Cart page', async ({ page }) => {
   await footer.getByRole('button').click()
   await expect(footer.getByText('You have been successfully subscribed!')).toBeVisible()
 });
-test('Test Case 12: Add Products in Cart', async ({ page }) => {
+test.only('Test Case 12: Add Products in Cart', async ({ page }) => {
   await page.getByRole('banner')
     .getByRole('link', { name: 'Products' }).click()
   await expect(page.getByRole('heading', { name: 'ALL PRODUCTS' })).toBeVisible()
@@ -212,12 +212,12 @@ test('Test Case 12: Add Products in Cart', async ({ page }) => {
     name: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('paragraph').first().textContent(),
     price: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('heading').first().textContent()
   }
-  console.log(`poprawne: ${firstItem.name} \nwszystkie: ${firstItem.price}`)
+  // console.log(`poprawne: ${firstItem.name} \nwszystkie: ${firstItem.price}`)
   const secondItem = {
     name: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('paragraph').nth(1).textContent(),
     price: await page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('heading').nth(1).textContent()
   }
-  console.log(`poprawne: ${secondItem.name} \nwszystkie: ${secondItem.price}`)
+  // console.log(`poprawne: ${secondItem.name} \nwszystkie: ${secondItem.price}`)
   await page.locator('xpath=//div[contains(@class, "productinfo")]/a[contains(text(), "Add to cart")]').first().hover()
   await page.locator('xpath=//div[contains(@class, "overlay-content")]/a[contains(text(), "Add to cart")]').first().click()
   await page.getByRole('button', { name: 'Continue Shopping' }).click()
@@ -242,6 +242,15 @@ test('Test Case 12: Add Products in Cart', async ({ page }) => {
     .getByRole('row').nth(2)
     .getByRole('cell').nth(2)
     .filter({ hasText: `${secondItem.price}` })).toBeVisible()
+  let i = 0
+  for (const tr of await page.locator('xpath=//tbody').getByRole('row').all()) {
+    i++
+    let count = await tr.getByRole('cell').nth(3).innerText()
+    console.log(`count dla itemu ${i} = ${count}\n`)
+    let price = (await tr.getByRole('cell').nth(4).innerText()).substring(3)
+    let totalPrice = Number(price) * Number(count)
+    console.log(`price dla itemu ${i} = ${totalPrice}\n`)
+  }
   await expect(page
     .getByRole('row').nth(1)
     .getByRole('cell').nth(3)).toHaveText('1')
