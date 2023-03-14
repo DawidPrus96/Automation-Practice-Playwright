@@ -554,3 +554,17 @@ test('Test Case 17: Remove Products From Cart', async ({ page }) => {
   await page.locator('xpath=//td[@class="cart_delete"]/a').click()
   await expect(page.locator('xpath=//*[@id="empty_cart"]')).toBeVisible()
 });
+
+
+test('Test Case 18: View Category Products', async ({ page }) => {
+  await page.locator('xpath=//a[@href="#Women"]').click()
+  await page
+    .locator('xpath=//div[@id="Women"]')
+    .getByRole('link', { name: "dress" }).click()
+  await expect(page.getByRole('heading', { name: `Women - Dress Products`, exact: true })).toBeVisible()
+  await page.locator('xpath=//a[@href="#Men"]').click()
+  await page
+    .locator('xpath=//div[@id="Men"]')
+    .getByRole('link', { name: "tshirts" }).click()
+  await expect(page.getByRole('heading', { name: `Men - Tshirts Products`, exact: true })).toBeVisible()
+});
