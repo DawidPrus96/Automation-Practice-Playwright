@@ -356,6 +356,7 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
   await expect(page
     .locator('xpath=//td[@class="cart_total"]')).toContainText(`${itemPrice * itemQuantity}`)
   await expect(page
+    .getByRole('row').last()
     .locator('xpath=//p[@class="cart_total_price"]')).toContainText(`${itemPrice * itemQuantity}`)
   await page.getByRole('textbox').first().fill('Test description')
   await page.getByRole('link', { name: 'place order' }).click()
@@ -456,6 +457,7 @@ test('Test Case 15: Place Order: Register before Checkout', async ({ page }) => 
   await expect(page
     .locator('xpath=//td[@class="cart_total"]')).toContainText(`${itemPrice * itemQuantity}`)
   await expect(page
+    .getByRole('row').last()
     .locator('xpath=//p[@class="cart_total_price"]')).toContainText(`${itemPrice * itemQuantity}`)
   await page.getByRole('textbox').first().fill('Test description')
   await page.getByRole('link', { name: 'place order' }).click()
@@ -521,6 +523,7 @@ test('Test Case 16: Place Order: Login before Checkout', async ({ page }) => {
   await expect(page
     .locator('xpath=//td[@class="cart_total"]')).toContainText(`${itemPrice * itemQuantity}`)
   await expect(page
+    .getByRole('row').last()
     .locator('xpath=//p[@class="cart_total_price"]')).toContainText(`${itemPrice * itemQuantity}`)
   await page.getByRole('textbox').first().fill('Test description')
   await page.getByRole('link', { name: 'place order' }).click()
