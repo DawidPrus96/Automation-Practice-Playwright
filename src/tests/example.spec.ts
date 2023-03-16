@@ -180,12 +180,52 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
-  await page.getByRole('link', { name: 'Register / Login' }).click()
-  await expect(page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
+  await playwrightDev.signupFromCart()
   await playwrightDev.signup(user)
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
   await playwrightDev.placeOrder(user, productDetails, description)
+  await playwrightDev.fillPayment(paymentData)
+  await playwrightDev.completeOrder()
+  await playwrightDev.deleteAccount(user)
+});
+
+test('Test Case 15: Place Order: Register before Checkout', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  const user = {
+    name: 'TC015Name',
+    email: 'TC015@Email.Address',
+    gender: 'Mr.', // Mr. or Mrs.
+    password: 'zaq1@WSX',
+    dateOfBirth: new Date("1996-02-16"),
+    newsletter: true,
+    offers: true,
+    firstName: 'testFirstname',
+    lastName: 'testLastName',
+    company: 'testCompany',
+    address: 'testAddress',
+    address2: 'testAddress2',
+    country: 'United States',
+    state: 'testState',
+    city: 'testCity',
+    zipcode: 'testZipcode',
+    mobileNumber: 0,
+  }
+
+  const paymentData = {
+    cardName: 'TC015CardName',
+    cardNumber: 4242424242424242,
+    cardCVC: 915,
+    cardExpirationMonth: 10,
+    cardExpirationYear: 2025,
+  }
+  await playwrightDev.gotoLoginPage()
+  await playwrightDev.signup(user)
+  let productDetails = await playwrightDev.addProductFromList(0)
+  await playwrightDev.continueShopping()
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.proceedToCheckout()
+  await playwrightDev.placeOrder(user, productDetails)
   await playwrightDev.fillPayment(paymentData)
   await playwrightDev.completeOrder()
   await playwrightDev.deleteAccount(user)

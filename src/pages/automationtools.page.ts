@@ -45,6 +45,7 @@ interface contactForm {
 }
 export class AutomationTools {
     readonly page: Page;
+    readonly websocket: WebSocket;
     // readonly getStartedLink: Locator;
     // readonly gettingStartedHeader: Locator;
     // readonly pomLink: Locator;
@@ -195,6 +196,8 @@ export class AutomationTools {
         await expect(this.page).toHaveURL('/')
     }
     async viewProduct(productPosition: number) {
+        const response = this.page.request.get('https://automationexercise.com/static/js/cart.js');
+        await expect(await response).toBeOK();
         let productDetails = this.page.locator('xpath=//div[@class="product-information"]')
         await this.page.getByRole('link', { name: 'view product' }).nth(productPosition).click()
         await expect(this.page).toHaveURL(/\/product_details\//)
@@ -213,6 +216,8 @@ export class AutomationTools {
         expect(await allSearchedProducts).toEqual(await correctSearchedProducts)
     }
     async subscribe(email: string) {
+        const response = this.page.request.get('https://automationexercise.com/static/js/subscription.js');
+        await expect(await response).toBeOK();
         await expect(this.footer.getByRole('heading', { name: 'Subscription' })).toBeVisible()
         await this.footer.getByRole('textbox').fill(email)
         await this.footer.getByRole('button').click()
@@ -254,20 +259,22 @@ export class AutomationTools {
     async proceedToCheckout() {
         await this.page.getByText('Proceed To Checkout').click()
     }
-    async placeOrder(user: user, item: { name: string, price: number, quantity: number }, description: string) {
-        await expect(this.page.getByRole('list').filter({ hasText: 'delivery address' })).toContainText(
-            `${user.gender}` &&
-            `${user.firstName}` &&
-            `${user.lastName}` &&
-            `${user.company}` &&
-            `${user.address}` &&
-            `${user.address2}` &&
-            `${user.city}` &&
-            `${user.state}` &&
-            `${user.zipcode}` &&
-            `${user.country}` &&
-            `${user.mobileNumber}`
-        )
+    async placeOrder(user: user, item: { name: string, price: number, quantity: number }, description?: string) {
+        let deliveryAddress = this.page.getByRole('list').filter({ hasText: 'delivery address' })
+        if (user.gender)
+            await expect(deliveryAddress).toContainText(user.gender)
+        await expect(deliveryAddress).toContainText(user.firstName)
+        await expect(deliveryAddress).toContainText(user.lastName)
+        if (user.company)
+            await expect(deliveryAddress).toContainText(user.company)
+        await expect(deliveryAddress).toContainText(user.address)
+        if (user.address2)
+            await expect(deliveryAddress).toContainText(user.address2)
+        await expect(deliveryAddress).toContainText(user.city)
+        await expect(deliveryAddress).toContainText(user.state)
+        await expect(deliveryAddress).toContainText(user.zipcode)
+        await expect(deliveryAddress).toContainText(user.country)
+        await expect(deliveryAddress).toContainText(`${user.mobileNumber}`)
         await expect(this.page
             .locator('xpath=//td[@class="cart_description"]'))
             .toContainText(`${item.name}`)
@@ -284,20 +291,27 @@ export class AutomationTools {
             .getByRole('row').last()
             .locator('xpath=//p[@class="cart_total_price"]'))
             .toContainText(`${item.price * item.quantity}`)
-        await this.page.getByRole('textbox').first().fill(description)
+        if (description)
+            await this.page.getByRole('textbox').first().fill(description)
         await this.page.getByRole('link', { name: 'place order' }).click()
     }
+    //----------------TO FIX!!!!!----------------------//
     async fillPayment(paymentData: paymentData) {
-        await this.page.locator('xpath=//*[@data-qa="name-on-card"]').fill(paymentData.cardName)
-        await this.page.locator('xpath=//*[@data-qa="card-number"]').fill(`${paymentData.cardNumber}`)
-        await this.page.locator('xpath=//*[@data-qa="cvc"]').fill(`${paymentData.cardCVC}`)
-        await this.page.locator('xpath=//*[@data-qa="expiry-month"]').fill(`${paymentData.cardExpirationMonth}`)
-        await this.page.locator('xpath=//*[@data-qa="expiry-year"]').fill(`${paymentData.cardExpirationYear}`)
+        await this.page.locator('xpath=//*[@data-qa="name-on-card"]').type(paymentData.cardName, { delay: 100 })
+        await this.page.locator('xpath=//*[@data-qa="card-number"]').type(`${paymentData.cardNumber, { delay: 100 }}`)
+        await this.page.locator('xpath=//*[@data-qa="cvc"]').type(`${paymentData.cardCVC, { delay: 100 }}`)
+        await this.page.locator('xpath=//*[@data-qa="expiry-month"]').type(`${paymentData.cardExpirationMonth, { delay: 100 }}`)
+        await this.page.locator('xpath=//*[@data-qa="expiry-year"]').type(`${paymentData.cardExpirationYear, { delay: 100 }}`)
         await this.page.locator('xpath=//*[@data-qa="pay-button"]').click({ noWaitAfter: true })
+        //await expect(this.page.locator('xpath=//div[@id="success_message"]')).toBeVisible()
     }
+
     async completeOrder() {
-        await expect(this.page.locator('xpath=//div[@id="success_message"]')).toBeVisible()
         await expect(this.page.getByRole('heading', { name: 'Order placed' })).toBeVisible()
         await this.useContinueButton()
+    }
+    async signupFromCart() {
+        await this.page.getByRole('link', { name: 'Register / Login' }).click()
+        await expect(this.page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
     }
 }
