@@ -48,6 +48,7 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
+        actionTimeout: 10 * 1000,
         ...devices['Desktop Chrome'],
         launchOptions: {
           args: [

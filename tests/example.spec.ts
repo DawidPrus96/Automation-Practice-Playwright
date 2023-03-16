@@ -250,17 +250,17 @@ test.beforeEach(async ({ page }) => {
 // });
 
 
-test('Test Case 13: Verify Product quantity in Cart', async ({ page }) => {
-  let quantity = 4
-  await page.getByRole('link', { name: 'view product' }).first().click()
-  await expect(page.locator('xpath=//div[@class="product-information"]')).toBeVisible()
-  await page.locator('xpath=//*[@id="quantity"]').fill(`${quantity}`)
-  await page.getByRole('button', { name: 'Add to cart' }).click()
-  await page.getByRole('link', { name: 'View Cart' }).click()
-  expect(
-    Number(await page.locator('xpath=//td[@class="cart_quantity"]').innerText())
-  ).toEqual(quantity)
-});
+// test('Test Case 13: Verify Product quantity in Cart', async ({ page }) => {
+//   let quantity = 4
+//   await page.getByRole('link', { name: 'view product' }).first().click()
+//   await expect(page.locator('xpath=//div[@class="product-information"]')).toBeVisible()
+//   await page.locator('xpath=//*[@id="quantity"]').fill(`${quantity}`)
+//   await page.getByRole('button', { name: 'Add to cart' }).click()
+//   await page.getByRole('link', { name: 'View Cart' }).click()
+//   expect(
+//     Number(await page.locator('xpath=//td[@class="cart_quantity"]').innerText())
+//   ).toEqual(quantity)
+// });
 
 
 test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
