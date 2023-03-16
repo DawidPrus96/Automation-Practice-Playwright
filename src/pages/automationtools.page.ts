@@ -1,6 +1,48 @@
 // playwright-dev-page.ts
 import { expect, Locator, Page } from '@playwright/test';
 
+interface signupCredentials {
+    name: string,
+    email: string,
+}
+interface loginCredentials {
+    email: string,
+    password: string,
+    name?: string,
+}
+interface user {
+    name: string,
+    email: string,
+    gender?: string,
+    password: string,
+    dateOfBirth?: Date,
+    newsletter?: boolean,
+    offers?: boolean,
+    firstName: string,
+    lastName: string,
+    company?: string,
+    address: string,
+    address2?: string,
+    country: string,
+    state: string,
+    city: string,
+    zipcode: string,
+    mobileNumber: number,
+}
+interface paymentData {
+    cardName: string,
+    cardNumber: number,
+    cardCVC: number,
+    cardExpirationMonth: number,
+    cardExpirationYear: number
+}
+interface contactForm {
+    name?: string
+    email: string
+    subject?: string
+    message?: string
+    file?: string
+}
 export class AutomationTools {
     readonly page: Page;
     // readonly getStartedLink: Locator;
@@ -66,18 +108,18 @@ export class AutomationTools {
         await expect(this.page).toHaveURL('/contact_us')
         await expect(this.page.getByRole('heading', { name: 'GET IN TOUCH', level: 2 })).toBeVisible()
     }
-    async deleteAccount(user: any) {
-        await expect(this.page.getByText(`Logged in as ${user.name}`, { exact: true })).toBeVisible()
+    async deleteAccount(credentials: signupCredentials) {
+        await expect(this.page.getByText(`Logged in as ${credentials.name}`, { exact: true })).toBeVisible()
         await this.selectTab('Delete Account')
         await expect(this.page.getByRole('heading', { name: 'ACCOUNT DELETED!' })).toBeVisible()
         await this.useContinueButton()
     }
-    async logout(user: any) {
-        await expect(this.page.getByText(`Logged in as ${user.name}`, { exact: true })).toBeVisible()
+    async logout(credentials: signupCredentials) {
+        await expect(this.page.getByText(`Logged in as ${credentials.name}`, { exact: true })).toBeVisible()
         await this.selectTab('Logout')
         await expect(this.page).toHaveURL('/login')
     }
-    async signup(user: any) {
+    async signup(user: user) {
         await this.signupCredentials(user)
         let IsExistingAccount = await this.page.getByText('Email Address already exist!').isVisible()
         if (IsExistingAccount) {
@@ -94,56 +136,57 @@ export class AutomationTools {
         await this.page.locator('xpath=//*[@data-qa="continue-button"]').click()
         await expect(this.page).toHaveURL('/')
     }
-    async signupCredentials(user: any) {
-        await this.page.locator('xpath=//*[@data-qa="signup-name"]').fill(user.name)
-        await this.page.locator('xpath=//*[@data-qa="signup-email"]').fill(user.email)
+    async signupCredentials(credentials: signupCredentials) {
+        await this.page.locator('xpath=//*[@data-qa="signup-name"]').fill(credentials.name)
+        await this.page.locator('xpath=//*[@data-qa="signup-email"]').fill(credentials.email)
         await this.page.locator('xpath=//*[@data-qa="signup-button"]').click()
     }
-    async fillSignupForm(user: any) {
+    async fillSignupForm(user: user) {
         await expect(this.page.getByRole('heading', { name: 'ENTER ACCOUNT INFORMATION' })).toBeVisible()
-        await this.page.getByLabel(user.gender).check()
+        if (user.gender)
+            await this.page.getByLabel(user.gender).check()
         await this.page.locator('xpath=//*[@data-qa="password"]').fill(user.password)
-        await this.page.locator('xpath=//*[@data-qa="days"]').selectOption(`${user.dateOfBirth.getDay()}`)
-        await this.page.locator('xpath=//*[@data-qa="months"]').selectOption(`${user.dateOfBirth.toLocaleString("en-US", { month: "long" })}`)
-        await this.page.locator('xpath=//*[@data-qa="years"]').selectOption(`${user.dateOfBirth.getFullYear()}`)
+        if (user.dateOfBirth) {
+            await this.page.locator('xpath=//*[@data-qa="days"]').selectOption(`${user.dateOfBirth.getDay()}`)
+            await this.page.locator('xpath=//*[@data-qa="months"]').selectOption(`${user.dateOfBirth.toLocaleString("en-US", { month: "long" })}`)
+            await this.page.locator('xpath=//*[@data-qa="years"]').selectOption(`${user.dateOfBirth.getFullYear()}`)
+        }
         if (user.newsletter)
             await this.page.getByRole('checkbox', { name: 'newsletter' }).check()
         if (user.offers)
             await this.page.getByRole('checkbox', { name: 'offers' }).check()
         await this.page.locator('xpath=//*[@data-qa="first_name"]').fill(user.firstName)
         await this.page.locator('xpath=//*[@data-qa="last_name"]').fill(user.lastName)
-        await this.page.locator('xpath=//*[@data-qa="company"]').fill(user.company)
+        if (user.company)
+            await this.page.locator('xpath=//*[@data-qa="company"]').fill(user.company)
         await this.page.locator('xpath=//*[@data-qa="address"]').fill(user.address)
-        await this.page.locator('xpath=//*[@data-qa="address2"]').fill(user.address2)
-        await this.page.locator('xpath=//*[@data-qa="country"]').selectOption(user.country)
+        if (user.address2)
+            await this.page.locator('xpath=//*[@data-qa="address2"]').fill(user.address2)
+        if (user.country)
+            await this.page.locator('xpath=//*[@data-qa="country"]').selectOption(user.country)
         await this.page.locator('xpath=//*[@data-qa="state"]').fill(user.state)
         await this.page.locator('xpath=//*[@data-qa="city"]').fill(user.city)
         await this.page.locator('xpath=//*[@data-qa="zipcode"]').fill(user.zipcode)
         await this.page.locator('xpath=//*[@data-qa="mobile_number"]').fill(`${user.mobileNumber}`)
         await this.page.locator('xpath=//*[@data-qa="create-account"]').click()
     }
-    async login(user: any) {
-        await this.page.locator('xpath=//*[@data-qa="login-email"]').fill(user.email)
-        await this.page.locator('xpath=//*[@data-qa="login-password"]').fill(user.password)
+    async login(credentials: loginCredentials) {
+        await this.page.locator('xpath=//*[@data-qa="login-email"]').fill(`${credentials.email}`)
+        await this.page.locator('xpath=//*[@data-qa="login-password"]').fill(`${credentials.password}`)
         await this.page.locator('xpath=//*[@data-qa="login-button"]').click()
     }
-    // async getStarted() {
-    //     await this.getStartedLink.first().click();
-    //     await expect(this.gettingStartedHeader).toBeVisible();
-    // }
-
-    // async pageObjectModel() {
-    //     await this.getStarted();
-    //     await this.pomLink.click();
-    // }
-    async fillContactUsForm(user: any) {
+    async fillContactUsForm(contactForm: contactForm) {
         const response = this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/intl/pl_ALL/common.js');
         await expect(await response).toBeOK();
-        await this.page.locator('xpath=//*[@data-qa="name"]').fill(user.name)
-        await this.page.locator('xpath=//*[@data-qa="email"]').fill(user.email)
-        await this.page.locator('xpath=//*[@data-qa="subject"]').fill(user.subject)
-        await this.page.locator('xpath=//*[@data-qa="message"]').fill(user.message)
-        await this.page.locator('input[name="upload_file"]').setInputFiles('exampleTextFile.txt');
+        if (contactForm.name)
+            await this.page.locator('xpath=//*[@data-qa="name"]').fill(contactForm.name)
+        await this.page.locator('xpath=//*[@data-qa="email"]').fill(contactForm.email)
+        if (contactForm.subject)
+            await this.page.locator('xpath=//*[@data-qa="subject"]').fill(contactForm.subject)
+        if (contactForm.message)
+            await this.page.locator('xpath=//*[@data-qa="message"]').fill(contactForm.message)
+        if (contactForm.file)
+            await this.page.locator('input[name="upload_file"]').setInputFiles(contactForm.file);
         await this.page.locator('xpath=//*[@data-qa="submit-button"]').click()
     }
     async contactUsGoHome() {
@@ -181,6 +224,7 @@ export class AutomationTools {
         const itemDetails = {
             name: String(await this.page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('paragraph').nth(productPosition).textContent()),
             price: Number((await this.page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('heading').nth(productPosition).textContent())?.substring(3)),
+            quantity: 1
         }
         return itemDetails
     }
@@ -190,7 +234,7 @@ export class AutomationTools {
     async viewCart() {
         await this.page.getByRole('link', { name: 'View Cart' }).click()
     }
-    async checkProductInCart(items: { name: string, price: number }[]) {
+    async checkProductsInCart(items: { name: string, price: number }[]) {
         let i = 0
         await expect(this.page
             .getByRole('row')).toHaveCount(items.length + 1)
@@ -207,25 +251,21 @@ export class AutomationTools {
         await this.page.locator('xpath=//*[@id="quantity"]').fill(`${quantity}`)
         await this.page.getByRole('button', { name: 'Add to cart' }).click()
     }
-    async viewCartFromDetails(quantity: number) {
-        await this.page.getByRole('link', { name: 'View Cart' }).click()
-    }
     async proceedToCheckout() {
         await this.page.getByText('Proceed To Checkout').click()
     }
-    async placeOrder(user: any, item: { name: string, price: number }) {
-        let itemQuantity = 1
+    async placeOrder(user: user, item: { name: string, price: number, quantity: number }, description: string) {
         await expect(this.page.getByRole('list').filter({ hasText: 'delivery address' })).toContainText(
-            user.gender &&
-            user.firstName &&
-            user.lastName &&
-            user.company &&
-            user.address &&
-            user.address2 &&
-            user.city &&
-            user.state &&
-            user.zipcode &&
-            user.country &&
+            `${user.gender}` &&
+            `${user.firstName}` &&
+            `${user.lastName}` &&
+            `${user.company}` &&
+            `${user.address}` &&
+            `${user.address2}` &&
+            `${user.city}` &&
+            `${user.state}` &&
+            `${user.zipcode}` &&
+            `${user.country}` &&
             `${user.mobileNumber}`
         )
         await expect(this.page
@@ -236,23 +276,23 @@ export class AutomationTools {
             .toContainText(`${item.price}`)
         await expect(this.page
             .locator('xpath=//td[@class="cart_quantity"]'))
-            .toContainText(`${itemQuantity}`)
+            .toContainText(`${item.quantity}`)
         await expect(this.page
             .locator('xpath=//td[@class="cart_total"]'))
-            .toContainText(`${item.price * itemQuantity}`)
+            .toContainText(`${item.price * item.quantity}`)
         await expect(this.page
             .getByRole('row').last()
             .locator('xpath=//p[@class="cart_total_price"]'))
-            .toContainText(`${item.price * itemQuantity}`)
-        await this.page.getByRole('textbox').first().fill(user.description)
+            .toContainText(`${item.price * item.quantity}`)
+        await this.page.getByRole('textbox').first().fill(description)
         await this.page.getByRole('link', { name: 'place order' }).click()
     }
-    async fillPayment(paymentData: any) {
+    async fillPayment(paymentData: paymentData) {
         await this.page.locator('xpath=//*[@data-qa="name-on-card"]').fill(paymentData.cardName)
-        await this.page.locator('xpath=//*[@data-qa="card-number"]').fill(paymentData.cardName)
-        await this.page.locator('xpath=//*[@data-qa="cvc"]').fill(paymentData.cardName)
-        await this.page.locator('xpath=//*[@data-qa="expiry-month"]').fill(paymentData.cardName)
-        await this.page.locator('xpath=//*[@data-qa="expiry-year"]').fill(paymentData.cardName)
+        await this.page.locator('xpath=//*[@data-qa="card-number"]').fill(`${paymentData.cardNumber}`)
+        await this.page.locator('xpath=//*[@data-qa="cvc"]').fill(`${paymentData.cardCVC}`)
+        await this.page.locator('xpath=//*[@data-qa="expiry-month"]').fill(`${paymentData.cardExpirationMonth}`)
+        await this.page.locator('xpath=//*[@data-qa="expiry-year"]').fill(`${paymentData.cardExpirationYear}`)
         await this.page.locator('xpath=//*[@data-qa="pay-button"]').click({ noWaitAfter: true })
     }
     async completeOrder() {

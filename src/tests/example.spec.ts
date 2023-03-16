@@ -5,8 +5,8 @@ test.use({ baseURL: 'https://automationexercise.com/' })
 test.beforeEach(async ({ page }) => {
   page.route('**/*', request => {
     return request.request().url().startsWith('https://googleads')
-      ? request.abort() :
-      request.continue();
+      ? request.abort()
+      : request.continue();
   })
   await page.goto('/')
   await expect(page).toHaveURL('/')
@@ -18,8 +18,8 @@ test('Test Case 1: Register User', async ({ page }) => {
   const user = {
     name: 'TC001Name',
     email: 'TC001@Email.Address',
-    gender: 'Mr.', // Mr. or Mrs.
     password: 'zaq1@WSX',
+    gender: 'Mr.', // Mr. or Mrs.
     dateOfBirth: new Date("1996-02-16"),
     newsletter: true,
     offers: true,
@@ -41,35 +41,35 @@ test('Test Case 1: Register User', async ({ page }) => {
 
 test('Test Case 2: Login User with correct email and password with TC004 instead of account deletion', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
-  const user = {
+  const credentials = {
     name: 'TC002Name',
     email: 'TC002@Email.Address',
     password: 'zaq1@WSX',
   }
   await playwrightDev.gotoLoginPage();
-  await playwrightDev.login(user)
-  await playwrightDev.logout(user)
+  await playwrightDev.login(credentials)
+  await playwrightDev.logout(credentials)
 });
 
 test('Test Case 3: Login User with incorrect email and password', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
-  const user = {
+  const credentials = {
     email: 'TC003@email.address',
     password: 'incorrectPassword',
   }
   await playwrightDev.gotoLoginPage();
-  await playwrightDev.login(user)
+  await playwrightDev.login(credentials)
   await expect(page.getByText('Your email or password is incorrect!')).toBeVisible()
 });
 
 test('Test Case 5: Register User with existing email', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
-  const user = {
+  const credentials = {
     name: 'TC005Name',
     email: 'correct@email.address',
   }
   await playwrightDev.gotoLoginPage();
-  await playwrightDev.signupCredentials(user)
+  await playwrightDev.signupCredentials(credentials)
   await expect(page.getByText('Email Address already exist!')).toBeVisible()
 });
 
@@ -82,7 +82,8 @@ test('Test Case 6: Contact Us Form', async ({ page }) => {
     name: 'TC006Name',
     email: 'TC006@email.address',
     subject: 'testSubject',
-    message: 'testMessage testMessage testMessage testMessage testMessage testMessage testMessage '
+    message: 'testMessage testMessage testMessage testMessage testMessage testMessage testMessage ',
+    file: 'exampleTextFile.txt',
   }
   await playwrightDev.gotoContactUsPage()
   await playwrightDev.fillContactUsForm(user)
@@ -131,7 +132,7 @@ test('Test Case 12: Add Products in Cart', async ({ page }) => {
     else
       await playwrightDev.viewCart()
   }
-  await playwrightDev.checkProductInCart(items)
+  await playwrightDev.checkProductsInCart(items)
 });
 
 test('Test Case 13: Verify Product quantity in Cart', async ({ page }) => {
@@ -165,16 +166,16 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
     city: 'testCity',
     zipcode: 'testZipcode',
     mobileNumber: 0,
-    description: 'test Description test Description test Description test Description test Description test Description '
   }
 
   const paymentData = {
     cardName: 'TC014CardName',
     cardNumber: 4242424242424242,
     cardCVC: 914,
-    cardExpirationMonth: 9,
+    cardExpirationMonth: 4,
     cardExpirationYear: 2024,
   }
+  let description = 'test Description test Description test Description test Description test Description test Description '
   let productDetails = await playwrightDev.addProductFromList(0)
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
@@ -184,7 +185,7 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
   await playwrightDev.signup(user)
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
-  await playwrightDev.placeOrder(user, productDetails)
+  await playwrightDev.placeOrder(user, productDetails, description)
   await playwrightDev.fillPayment(paymentData)
   await playwrightDev.completeOrder()
   await playwrightDev.deleteAccount(user)
