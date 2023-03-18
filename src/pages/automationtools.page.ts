@@ -108,6 +108,8 @@ export class AutomationTools {
         await this.selectTab('Contact us')
         await expect(this.page).toHaveURL('/contact_us')
         await expect(this.page.getByRole('heading', { name: 'GET IN TOUCH', level: 2 })).toBeVisible()
+        const response = await this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/util.js');
+        await expect(response).toBeOK();
     }
     async deleteAccount(credentials: signupCredentials) {
         await expect(this.page.getByText(`Logged in as ${credentials.name}`, { exact: true })).toBeVisible()
@@ -177,8 +179,10 @@ export class AutomationTools {
         await this.page.locator('xpath=//*[@data-qa="login-button"]').click()
     }
     async fillContactUsForm(contactForm: contactForm) {
-        const response = this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/intl/pl_ALL/common.js');
-        await expect(await response).toBeOK();
+        this.page.once('dialog', dialog => {
+            dialog.accept();
+        });
+
         if (contactForm.name)
             await this.page.locator('xpath=//*[@data-qa="name"]').fill(contactForm.name)
         await this.page.locator('xpath=//*[@data-qa="email"]').fill(contactForm.email)
@@ -188,7 +192,7 @@ export class AutomationTools {
             await this.page.locator('xpath=//*[@data-qa="message"]').fill(contactForm.message)
         if (contactForm.file)
             await this.page.locator('input[name="upload_file"]').setInputFiles(contactForm.file);
-        await this.page.locator('xpath=//*[@data-qa="submit-button"]').click()
+        this.page.locator('xpath=//*[@data-qa="submit-button"]').click()
     }
     async contactUsGoHome() {
         await expect(this.page.locator('xpath=//div[@class="contact-form"]').getByText('Success! Your details have been submitted successfully.')).toBeVisible()
@@ -196,10 +200,12 @@ export class AutomationTools {
         await expect(this.page).toHaveURL('/')
     }
     async viewProduct(productPosition: number) {
-        const response = this.page.request.get('https://automationexercise.com/static/js/cart.js');
-        await expect(await response).toBeOK();
         let productDetails = this.page.locator('xpath=//div[@class="product-information"]')
+        // const response = this.page.request.get('https://automationexercise.com/static/images/home/short_logo.png');
+        // await expect(await response).toBeOK();
         await this.page.getByRole('link', { name: 'view product' }).nth(productPosition).click()
+        const response = await this.page.request.get('https://automationexercise.com/static/js/cart.js');
+        await expect(response).toBeOK();
         await expect(this.page).toHaveURL(/\/product_details\//)
         await expect(productDetails.getByRole('heading')).toBeVisible()
         await expect(productDetails.getByText('Category')).toBeVisible()
@@ -216,8 +222,6 @@ export class AutomationTools {
         expect(await allSearchedProducts).toEqual(await correctSearchedProducts)
     }
     async subscribe(email: string) {
-        const response = this.page.request.get('https://automationexercise.com/static/js/subscription.js');
-        await expect(await response).toBeOK();
         await expect(this.footer.getByRole('heading', { name: 'Subscription' })).toBeVisible()
         await this.footer.getByRole('textbox').fill(email)
         await this.footer.getByRole('button').click()
@@ -226,12 +230,18 @@ export class AutomationTools {
     async addProductFromList(productPosition: number) {
         await this.page.locator('xpath=//div[contains(@class, "productinfo")]/a[contains(text(), "Add to cart")]').nth(productPosition).hover()
         await this.page.locator('xpath=//div[contains(@class, "overlay-content")]/a[contains(text(), "Add to cart")]').nth(productPosition).click()
+        // await this.page.locator(`xpath=//div[contains(@class, "productinfo")]/a`).nth(productPosition).click()
         const itemDetails = {
             name: String(await this.page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('paragraph').nth(productPosition).textContent()),
             price: Number((await this.page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('heading').nth(productPosition).textContent())?.substring(3)),
             quantity: 1
         }
         return itemDetails
+    }
+    async addProductFromDetails(quantity: number) {
+        await this.page.locator('xpath=//*[@id="quantity"]').fill(`${quantity}`)
+        await this.page.getByRole('button', { name: 'Add to cart' }).click()
+        await expect(this.page.getByRole('link', { name: 'View Cart' })).toBeVisible()
     }
     async continueShopping() {
         await this.page.getByRole('button', { name: 'Continue Shopping' }).click()
@@ -251,10 +261,6 @@ export class AutomationTools {
             expect(totalPrice).toEqual(items[i].price * count)
             i++
         }
-    }
-    async addProductFromDetails(quantity: number) {
-        await this.page.locator('xpath=//*[@id="quantity"]').fill(`${quantity}`)
-        await this.page.getByRole('button', { name: 'Add to cart' }).click()
     }
     async proceedToCheckout() {
         await this.page.getByText('Proceed To Checkout').click()
@@ -292,18 +298,20 @@ export class AutomationTools {
             .locator('xpath=//p[@class="cart_total_price"]'))
             .toContainText(`${item.price * item.quantity}`)
         if (description)
-            await this.page.getByRole('textbox').first().fill(description)
+            await this.page
+                .locator('#ordermsg')
+                .getByRole('textbox').fill(description)
         await this.page.getByRole('link', { name: 'place order' }).click()
     }
     //----------------TO FIX!!!!!----------------------//
     async fillPayment(paymentData: paymentData) {
-        await this.page.locator('xpath=//*[@data-qa="name-on-card"]').type(paymentData.cardName, { delay: 100 })
-        await this.page.locator('xpath=//*[@data-qa="card-number"]').type(`${paymentData.cardNumber, { delay: 100 }}`)
-        await this.page.locator('xpath=//*[@data-qa="cvc"]').type(`${paymentData.cardCVC, { delay: 100 }}`)
-        await this.page.locator('xpath=//*[@data-qa="expiry-month"]').type(`${paymentData.cardExpirationMonth, { delay: 100 }}`)
-        await this.page.locator('xpath=//*[@data-qa="expiry-year"]').type(`${paymentData.cardExpirationYear, { delay: 100 }}`)
+        await this.page.locator('xpath=//*[@data-qa="name-on-card"]').fill(paymentData.cardName)
+        await this.page.locator('xpath=//*[@data-qa="card-number"]').fill(`${paymentData.cardNumber}`)
+        await this.page.locator('xpath=//*[@data-qa="cvc"]').fill(`${paymentData.cardCVC}`)
+        await this.page.locator('xpath=//*[@data-qa="expiry-month"]').fill(`${paymentData.cardExpirationMonth}`)
+        await this.page.locator('xpath=//*[@data-qa="expiry-year"]').fill(`${paymentData.cardExpirationYear}`)
         await this.page.locator('xpath=//*[@data-qa="pay-button"]').click({ noWaitAfter: true })
-        //await expect(this.page.locator('xpath=//div[@id="success_message"]')).toBeVisible()
+        await expect(this.page.locator('xpath=//div[@id="success_message"]')).toBeVisible()
     }
 
     async completeOrder() {
@@ -313,5 +321,23 @@ export class AutomationTools {
     async signupFromCart() {
         await this.page.getByRole('link', { name: 'Register / Login' }).click()
         await expect(this.page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
+    }
+    async resetBasket() {
+        for (const tr of await this.page.locator('xpath=//tbody/tr').all()) {
+            await tr.locator('xpath=/*[@class="cart_delete"]/a').click()
+        }
+        await expect(this.page.getByText('Cart is empty')).toBeVisible()
+    }
+    async expandCategory(category: string) {
+        await this.page
+            .locator(`xpath=//div[@id="${category}"]/preceding-sibling::div`)
+            .getByRole('link', { name: category })
+            .click()
+        await expect(this.page.locator(`xpath=//div[@id="${category}"]`)).toBeVisible()
+    }
+    async selectSubCategory(category: string, subcategory: string) {
+        await this.expandCategory(category)
+        await this.page.locator(`xpath=//div[@id="${category}"]`).getByRole('link', { name: subcategory }).click()
+        await expect(this.page.locator('xpath=//div[@class="features_items"]').getByRole('heading', { level: 2, name: `${category} - ${subcategory} PRODUCTS` }).first()).toBeVisible()
     }
 }

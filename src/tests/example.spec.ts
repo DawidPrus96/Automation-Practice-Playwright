@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 import { AutomationTools } from '../pages/automationtools.page';
 test.use({ baseURL: 'https://automationexercise.com/' })
 test.beforeEach(async ({ page }) => {
-  page.route('**/*', request => {
-    return request.request().url().startsWith('https://googleads')
+  await page.route('**/*', request => {
+    return request.request().url().startsWith('https://googleads' || 'https://pagead2' || 'https://maps.googleapis')
       ? request.abort()
       : request.continue();
   })
@@ -75,9 +75,9 @@ test('Test Case 5: Register User with existing email', async ({ page }) => {
 
 test('Test Case 6: Contact Us Form', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
-  page.on('dialog', async dialog => {
-    await dialog.accept();
-  });
+  // page.on('dialog', async dialog => {
+  //   await dialog.accept();
+  // });
   const user = {
     name: 'TC006Name',
     email: 'TC006@email.address',
@@ -229,4 +229,62 @@ test('Test Case 15: Place Order: Register before Checkout', async ({ page }) => 
   await playwrightDev.fillPayment(paymentData)
   await playwrightDev.completeOrder()
   await playwrightDev.deleteAccount(user)
+});
+
+test('Test Case 16: Place Order: Login before Checkout', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  const user = {
+    name: 'TC016Name',
+    email: 'TC016@Email.Address',
+    gender: 'Mr.', // Mr. or Mrs.
+    password: 'zaq1@WSX',
+    dateOfBirth: new Date("1996-02-16"),
+    newsletter: true,
+    offers: true,
+    firstName: 'testFirstname',
+    lastName: 'testLastName',
+    company: 'testCompany',
+    address: 'testAddress',
+    address2: 'testAddress2',
+    country: 'United States',
+    state: 'testState',
+    city: 'testCity',
+    zipcode: 'testZipcode',
+    mobileNumber: 0,
+  }
+  const paymentData = {
+    cardName: 'TC016CardName',
+    cardNumber: 4242424242424242,
+    cardCVC: 916,
+    cardExpirationMonth: 11,
+    cardExpirationYear: 2026,
+  }
+  await playwrightDev.gotoLoginPage()
+  await playwrightDev.login(user)
+  await expect(page.getByText(`Logged in as ${user.name}`, { exact: true })).toBeVisible()
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.resetBasket()
+  await playwrightDev.gotoHomePage()
+  let productDetails = await playwrightDev.addProductFromList(0)
+  await playwrightDev.continueShopping()
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.proceedToCheckout()
+  await playwrightDev.placeOrder(user, productDetails)
+  await playwrightDev.fillPayment(paymentData)
+  await playwrightDev.completeOrder()
+  await playwrightDev.logout(user)
+});
+
+test('Test Case 17: Remove Products From Cart', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  await playwrightDev.addProductFromList(0)
+  await playwrightDev.continueShopping()
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.resetBasket()
+});
+
+test('Test Case 18: View Category Products', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  await playwrightDev.selectSubCategory("Women", "dress")
+  await playwrightDev.selectSubCategory("Men", "tshirts")
 });
