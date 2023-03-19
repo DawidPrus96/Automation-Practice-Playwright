@@ -48,6 +48,9 @@ interface contactForm {
     message?: string
     file?: string
 }
+interface addressType {
+    defaultAddressType: 'delivery' | 'billing'
+}
 export class AutomationTools {
     readonly page: Page;
     readonly websocket: WebSocket;
@@ -130,6 +133,7 @@ export class AutomationTools {
         await this.fillSignupForm(user)
         await expect(this.page.getByRole('heading', { name: 'ACCOUNT CREATED!' })).toBeVisible()
         await this.useContinueButton()
+        await expect(this.page.getByText(`Logged in as ${user.name}`, { exact: true })).toBeVisible()
     }
     async useContinueButton() {
         await this.page.locator('xpath=//*[@data-qa="continue-button"]').click()
@@ -282,23 +286,31 @@ export class AutomationTools {
     async proceedToCheckout() {
         await this.page.locator('.check_out').click()
     }
-    async placeOrder(user: user, item: { name: string, price: number, quantity: number }[], description?: string) {
-        let deliveryAddress = this.page.locator('#address_delivery')
-        await expect(deliveryAddress.getByRole('heading', { name: 'YOUR DELIVERY ADDRESS' })).toBeVisible()
+    async checkAddress(addressType: Locator, user: user) {
         if (user.gender)
-            await expect(deliveryAddress.locator('.address_firstname.address_lastname')).toContainText(`${user.gender}`)
-        await expect(deliveryAddress.locator('.address_firstname.address_lastname')).toContainText(`${user.firstName} ${user.lastName}`)
+            await expect(addressType.locator('.address_firstname.address_lastname')).toContainText(`${user.gender}`)
+        await expect(addressType.locator('.address_firstname.address_lastname')).toContainText(`${user.firstName} ${user.lastName}`)
         if (user.company)
-            await expect(deliveryAddress.locator('.address_address1.address_address2').nth(0)).toContainText(user.company)
-        await expect(deliveryAddress.locator('.address_address1.address_address2').nth(1)).toContainText(user.address)
+            await expect(addressType.locator('.address_address1.address_address2').nth(0)).toContainText(user.company)
+        await expect(addressType.locator('.address_address1.address_address2').nth(1)).toContainText(user.address)
         if (user.address2)
-            await expect(deliveryAddress.locator('.address_address1.address_address2').nth(2)).toContainText(user.address2)
-        await expect(deliveryAddress.locator('.address_city.address_state_name.address_postcode')).toContainText(`${user.city} ${user.state} ${user.zipcode}`)
-        await expect(deliveryAddress.locator('.address_country_name')).toContainText(user.country)
-        await expect(deliveryAddress.locator('.address_phone')).toContainText(`${user.mobileNumber}`)
+            await expect(addressType.locator('.address_address1.address_address2').nth(2)).toContainText(user.address2)
+        await expect(addressType.locator('.address_city.address_state_name.address_postcode')).toContainText(`${user.city} ${user.state} ${user.zipcode}`)
+        await expect(addressType.locator('.address_country_name')).toContainText(user.country)
+        await expect(addressType.locator('.address_phone')).toContainText(`${user.mobileNumber}`)
+    }
+    async checkOrder(user: user, item: { name: string, price: number, quantity: number }[], description?: string) {
+        let deliveryAddress = this.page.locator('#address_delivery')
+        let billingAddress = this.page.locator('#address_invoice')
+        await expect(deliveryAddress.getByRole('heading', { name: 'YOUR DELIVERY ADDRESS' })).toBeVisible()
+        await expect(billingAddress.getByRole('heading', { name: 'YOUR BILLING ADDRESS' })).toBeVisible()
+        this.checkAddress(deliveryAddress, user)
+        this.checkAddress(billingAddress, user)
         await this.checkProductsInCart(item)
         if (description)
             await this.page.locator('textarea[name=message]').fill(description)
+    }
+    async placeOrder() {
         await this.page.getByRole('link', { name: 'place order' }).click()
     }
     //----------------TO FIX!!!!!----------------------//

@@ -184,7 +184,8 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
   await playwrightDev.signup(user)
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
-  await playwrightDev.placeOrder(user, productDetails, description)
+  await playwrightDev.checkOrder(user, productDetails, description)
+  await playwrightDev.placeOrder()
   await playwrightDev.fillPayment(paymentData)
   await playwrightDev.completeOrder()
   await playwrightDev.deleteAccount(user)
@@ -219,13 +220,15 @@ test('Test Case 15: Place Order: Register before Checkout', async ({ page }) => 
     cardExpirationMonth: 10,
     cardExpirationYear: 2025,
   }
+  let description = "test description test description test description test description "
   await playwrightDev.gotoLoginPage()
   await playwrightDev.signup(user)
   let productDetails = [await playwrightDev.addProductFromList(1)]
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
-  await playwrightDev.placeOrder(user, productDetails)
+  await playwrightDev.checkOrder(user, productDetails, description)
+  await playwrightDev.placeOrder()
   await playwrightDev.fillPayment(paymentData)
   await playwrightDev.completeOrder()
   await playwrightDev.deleteAccount(user)
@@ -259,6 +262,7 @@ test('Test Case 16: Place Order: Login before Checkout', async ({ page }) => {
     cardExpirationMonth: 11,
     cardExpirationYear: 2026,
   }
+  let description = "test description test description test description test description "
   await playwrightDev.gotoLoginPage()
   await playwrightDev.login(user)
   await expect(page.getByText(`Logged in as ${user.name}`, { exact: true })).toBeVisible()
@@ -269,7 +273,8 @@ test('Test Case 16: Place Order: Login before Checkout', async ({ page }) => {
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
-  await playwrightDev.placeOrder(user, productDetails)
+  await playwrightDev.checkOrder(user, productDetails, description)
+  await playwrightDev.placeOrder()
   await playwrightDev.fillPayment(paymentData)
   await playwrightDev.completeOrder()
   await playwrightDev.logout(user)
@@ -332,4 +337,34 @@ test('Test Case 22: Add to cart from Recommended items', async ({ page }) => {
   let items = [await playwrightDev.addProductFromRecommended(1)]
   await playwrightDev.viewCart()
   await playwrightDev.checkProductsInCart(items)
+});
+test('Test Case 23: Verify address details in checkout page', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  const user = {
+    name: 'TC023Name',
+    email: 'TC023@Email.Address',
+    password: 'zaq1@WSX',
+    gender: 'Mr.', // Mr. or Mrs.
+    dateOfBirth: new Date("1996-02-16"),
+    newsletter: true,
+    offers: true,
+    firstName: 'testFirstname',
+    lastName: 'testLastName',
+    company: 'testCompany',
+    address: 'testAddress',
+    address2: 'testAddress2',
+    country: 'United States',
+    state: 'testState',
+    city: 'testCity',
+    zipcode: 'testZipcode',
+    mobileNumber: 0,
+  }
+  await playwrightDev.gotoLoginPage()
+  await playwrightDev.signup(user)
+  let productDetails = [await playwrightDev.addProductFromList(1)]
+  await playwrightDev.continueShopping()
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.proceedToCheckout()
+  await playwrightDev.checkOrder(user, productDetails)
+  await playwrightDev.deleteAccount(user)
 });
