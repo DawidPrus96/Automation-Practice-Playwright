@@ -187,7 +187,7 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
   await playwrightDev.checkOrder(user, productDetails, description)
   await playwrightDev.placeOrder()
   await playwrightDev.fillPayment(paymentData)
-  await playwrightDev.completeOrder()
+  await playwrightDev.useContinueButton()
   await playwrightDev.deleteAccount(user)
 });
 
@@ -230,7 +230,7 @@ test('Test Case 15: Place Order: Register before Checkout', async ({ page }) => 
   await playwrightDev.checkOrder(user, productDetails, description)
   await playwrightDev.placeOrder()
   await playwrightDev.fillPayment(paymentData)
-  await playwrightDev.completeOrder()
+  await playwrightDev.useContinueButton()
   await playwrightDev.deleteAccount(user)
 });
 
@@ -276,7 +276,7 @@ test('Test Case 16: Place Order: Login before Checkout', async ({ page }) => {
   await playwrightDev.checkOrder(user, productDetails, description)
   await playwrightDev.placeOrder()
   await playwrightDev.fillPayment(paymentData)
-  await playwrightDev.completeOrder()
+  await playwrightDev.useContinueButton()
   await playwrightDev.logout(user)
 });
 
@@ -367,4 +367,60 @@ test('Test Case 23: Verify address details in checkout page', async ({ page }) =
   await playwrightDev.proceedToCheckout()
   await playwrightDev.checkOrder(user, productDetails)
   await playwrightDev.deleteAccount(user)
+});
+test('Test Case 24: Download Invoice after purchase order', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  const user = {
+    name: 'TC024Name',
+    email: 'TC024@Email.Address',
+    gender: 'Mr.', // Mr. or Mrs.
+    password: 'zaq1@WSX',
+    dateOfBirth: new Date("1996-02-16"),
+    newsletter: true,
+    offers: true,
+    firstName: 'testFirstname',
+    lastName: 'testLastName',
+    company: 'testCompany',
+    address: 'testAddress',
+    address2: 'testAddress2',
+    country: 'United States',
+    state: 'testState',
+    city: 'testCity',
+    zipcode: 'testZipcode',
+    mobileNumber: 0,
+  }
+  const paymentData = {
+    cardName: 'TC014CardName',
+    cardNumber: 4242424242424242,
+    cardCVC: 914,
+    cardExpirationMonth: 4,
+    cardExpirationYear: 2024,
+  }
+  let description = 'test Description test Description test Description test Description test Description test Description '
+  let productDetails = [await playwrightDev.addProductFromList(1)]
+  await playwrightDev.continueShopping()
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.proceedToCheckout()
+  await playwrightDev.signupFromCart()
+  await playwrightDev.signup(user)
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.proceedToCheckout()
+  await playwrightDev.checkOrder(user, productDetails, description)
+  await playwrightDev.placeOrder()
+  await playwrightDev.fillPayment(paymentData)
+  await playwrightDev.downloadInvoice()
+  await playwrightDev.useContinueButton()
+  await playwrightDev.deleteAccount(user)
+});
+test('Test Case 25: Verify Scroll Up using \'Arrow\' button and Scroll Down functionality', async ({ page }) => {
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect(page.locator('.single-widget').filter({ hasText: 'SUBSCRIPTION' })).toBeInViewport()
+  await page.locator('#scrollUp').click()
+  await expect(page.locator('.item.active').getByText('Full-Fledged practice website for Automation Engineers')).toBeInViewport()
+});
+test('Test Case 26: Verify Scroll Up without \'Arrow\' button and Scroll Down functionality', async ({ page }) => {
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await expect(page.locator('.single-widget').filter({ hasText: 'SUBSCRIPTION' })).toBeInViewport()
+  await page.evaluate(() => window.scrollTo(0, screenTop));
+  await expect(page.locator('.item.active').getByText('Full-Fledged practice website for Automation Engineers')).toBeInViewport()
 });

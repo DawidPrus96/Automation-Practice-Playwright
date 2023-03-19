@@ -322,11 +322,14 @@ export class AutomationTools {
         await this.page.locator('xpath=//*[@data-qa="expiry-year"]').fill(`${paymentData.cardExpirationYear}`)
         await this.page.locator('xpath=//*[@data-qa="pay-button"]').click({ noWaitAfter: true })
         await expect(this.page.locator('#success_message')).toBeVisible()
-    }
-
-    async completeOrder() {
         await expect(this.page.getByRole('heading', { name: 'Order placed' })).toBeVisible()
-        await this.useContinueButton()
+    }
+    async downloadInvoice() {
+        const downloadPromise = this.page.waitForEvent('download');
+        await this.page.getByRole('link', { name: 'Download Invoice' }).click()
+        const download = await downloadPromise;
+        // Save downloaded file somewhere
+        await download.saveAs('../downloads/invoice.txt');
     }
     async signupFromCart() {
         await this.page.getByRole('link', { name: 'Register / Login' }).click()

@@ -17,9 +17,11 @@ export default defineConfig({
       // repeatEach: 10,
       use: {
         //trace: 'retain-on-failure',
+        acceptDownloads: true,
         ...devices['Desktop Chrome'],
         actionTimeout: 10 * 1000,
         launchOptions: {
+          downloadsPath: './src/downloads',
           args: [
             // `--disable-extensions-except=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
             // `--load-extension=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
