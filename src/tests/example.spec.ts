@@ -98,7 +98,7 @@ test('Test Case 7: Verify Test Cases Page', async ({ page }) => {
 test('Test Case 8: Verify All Products and product detail page', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
   await playwrightDev.gotoProductsPage()
-  await playwrightDev.viewProduct(0)
+  await playwrightDev.viewProduct(1)
 });
 
 test('Test Case 9: Search Product', async ({ page }) => {
@@ -122,7 +122,7 @@ test('Test Case 11: Verify Subscription in Cart page', async ({ page }) => {
 
 test('Test Case 12: Add Products in Cart', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
-  const items: { name: any, price: any }[] = []
+  const items: { name: string, price: number, quantity: number }[] = []
   const howManyItems = 2
   await playwrightDev.gotoProductsPage()
   for (let i = 1; i <= howManyItems; i++) {
@@ -176,7 +176,7 @@ test('Test Case 14: Place Order: Register while Checkout', async ({ page }) => {
     cardExpirationYear: 2024,
   }
   let description = 'test Description test Description test Description test Description test Description test Description '
-  let productDetails = await playwrightDev.addProductFromList(0)
+  let productDetails = [await playwrightDev.addProductFromList(1)]
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
@@ -221,7 +221,7 @@ test('Test Case 15: Place Order: Register before Checkout', async ({ page }) => 
   }
   await playwrightDev.gotoLoginPage()
   await playwrightDev.signup(user)
-  let productDetails = await playwrightDev.addProductFromList(0)
+  let productDetails = [await playwrightDev.addProductFromList(1)]
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
@@ -265,7 +265,7 @@ test('Test Case 16: Place Order: Login before Checkout', async ({ page }) => {
   await playwrightDev.gotoCartPage()
   await playwrightDev.resetBasket()
   await playwrightDev.gotoHomePage()
-  let productDetails = await playwrightDev.addProductFromList(0)
+  let productDetails = [await playwrightDev.addProductFromList(1)]
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
   await playwrightDev.proceedToCheckout()
@@ -277,7 +277,7 @@ test('Test Case 16: Place Order: Login before Checkout', async ({ page }) => {
 
 test('Test Case 17: Remove Products From Cart', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
-  await playwrightDev.addProductFromList(0)
+  await playwrightDev.addProductFromList(1)
   await playwrightDev.continueShopping()
   await playwrightDev.gotoCartPage()
   await playwrightDev.resetBasket()
@@ -301,6 +301,11 @@ test('Test Case 20: Search Products and Verify Cart After Login', async ({ page 
     email: 'TC020@Email.Address',
     password: 'zaq1@WSX',
   }
+  await playwrightDev.gotoLoginPage()
+  await playwrightDev.login(credentials)
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.resetBasket()
+  await playwrightDev.logout(credentials)
   await playwrightDev.gotoProductsPage()
   let items = await playwrightDev.addEveryProductFromList("Blue")
   await playwrightDev.gotoCartPage()
@@ -309,10 +314,9 @@ test('Test Case 20: Search Products and Verify Cart After Login', async ({ page 
   await playwrightDev.login(credentials)
   await playwrightDev.gotoCartPage()
   await playwrightDev.checkProductsInCart(items)
-  await playwrightDev.resetBasket()
   await playwrightDev.logout(credentials)
 });
-test.only('Test Case 21: Add review on product', async ({ page }) => {
+test('Test Case 21: Add review on product', async ({ page }) => {
   const playwrightDev = new AutomationTools(page);
   const review = {
     name: 'TC021Name',
@@ -322,4 +326,10 @@ test.only('Test Case 21: Add review on product', async ({ page }) => {
   await playwrightDev.gotoProductsPage()
   await playwrightDev.viewProduct(1)
   await playwrightDev.addReview(review)
+});
+test('Test Case 22: Add to cart from Recommended items', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  let items = [await playwrightDev.addProductFromRecommended(1)]
+  await playwrightDev.viewCart()
+  await playwrightDev.checkProductsInCart(items)
 });

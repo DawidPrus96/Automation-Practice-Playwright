@@ -55,24 +55,12 @@ export class AutomationTools {
     // readonly gettingStartedHeader: Locator;
     // readonly pomLink: Locator;
     // readonly tocList: Locator;
-    readonly footer: Locator
-    readonly cartProduct: Locator
-    readonly cartProductDescription: Locator
-    readonly cartProductPrice: Locator
-    readonly cartProductQuantity: Locator
-    readonly cartProductTotal: Locator
     constructor(page: Page) {
         this.page = page;
         // this.getStartedLink = page.locator('a', { hasText: 'Get started' });
         // this.gettingStartedHeader = page.locator('h1', { hasText: 'Installation' });
         // this.pomLink = page.locator('li', { hasText: 'Guides' }).locator('a', { hasText: 'Page Object Model' });
         // this.tocList = page.locator('article div.markdown ul > li > a');
-        this.footer = page.locator('#footer')
-        this.cartProduct = page.locator('xpath=//tbody/tr')
-        this.cartProductDescription = this.cartProduct.locator('xpath=/td[@class="cart_description"]')
-        this.cartProductPrice = this.cartProduct.locator('xpath=/td[@class="cart_price"]')
-        this.cartProductQuantity = this.cartProduct.locator('xpath=/td[@class="cart_quantity"]')
-        this.cartProductTotal = this.cartProduct.locator('xpath=/td[@class="cart_total"]')
     }
 
     async selectTab(tabName: string) {
@@ -93,6 +81,8 @@ export class AutomationTools {
     async gotoCartPage() {
         await this.selectTab('Cart')
         await expect(this.page).toHaveURL('/view_cart')
+        const response = await this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/util.js');
+        await expect(response).toBeOK();
     }
     async gotoLoginPage() {
         await this.selectTab('Signup / Login')
@@ -134,7 +124,7 @@ export class AutomationTools {
         if (IsExistingAccount) {
             await this.login(user)
             await this.deleteAccount(user)
-            await this.selectTab('login');
+            await this.gotoLoginPage()
             await this.signupCredentials(user)
         }
         await this.fillSignupForm(user)
@@ -188,7 +178,6 @@ export class AutomationTools {
         this.page.once('dialog', dialog => {
             dialog.accept();
         });
-
         if (contactForm.name)
             await this.page.locator('xpath=//*[@data-qa="name"]').fill(contactForm.name)
         await this.page.locator('xpath=//*[@data-qa="email"]').fill(contactForm.email)
@@ -201,18 +190,19 @@ export class AutomationTools {
         this.page.locator('xpath=//*[@data-qa="submit-button"]').click()
     }
     async contactUsGoHome() {
-        await expect(this.page.locator('xpath=//div[@class="contact-form"]').getByText('Success! Your details have been submitted successfully.')).toBeVisible()
-        await this.page.locator('xpath=//div[@class="contact-form"]').getByRole('link', { name: 'Home' }).click();
+        let contactForm = this.page.locator('#contact-page')
+        await expect(contactForm.getByText('Success! Your details have been submitted successfully.')).toBeVisible()
+        await contactForm.getByRole('link', { name: 'Home' }).click();
         await expect(this.page).toHaveURL('/')
     }
     async viewProduct(productPosition: number) {
-        let productDetails = this.page.locator('xpath=//div[@class="product-information"]')
+        let productDetails = this.page.locator('.product-information')
         // const response = this.page.request.get('https://automationexercise.com/static/images/home/short_logo.png');
         // await expect(await response).toBeOK();
-        await this.page.getByRole('link', { name: 'view product' }).nth(productPosition).click()
+        await this.page.getByRole('link', { name: 'view product' }).nth(productPosition - 1).click()
         const response = await this.page.request.get('https://automationexercise.com/static/js/cart.js');
         await expect(response).toBeOK();
-        await expect(this.page).toHaveURL(/\/product_details\//)
+        await expect(this.page).toHaveURL(/.*product_details/)
         await expect(this.page.getByRole('link', { name: 'WRITE YOUR REVIEW' })).toBeVisible()
         await expect(productDetails.getByRole('heading')).toBeVisible()
         await expect(productDetails.getByText('Category')).toBeVisible()
@@ -222,94 +212,93 @@ export class AutomationTools {
         await expect(productDetails.getByText('Brand: ')).toBeVisible()
     }
     async searchForProduct(productName: string) {
-        await this.page.getByPlaceholder('Search Product').fill(productName);
-        await this.page.locator('xpath=//button[@id="submit_search"]').click()
-        await expect(this.page.locator('xpath=//div[@class="features_items"]').getByRole('heading', { level: 2, name: 'SEARCHED PRODUCTS' }).first()).toBeVisible()
-        let allSearchedProducts = await this.page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p`).count()
-        let correctSearchedProducts = await this.page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p[contains(text(),${new RegExp(productName, "i")})]`).count()
-        expect(allSearchedProducts).toEqual(correctSearchedProducts)
-        return allSearchedProducts
+        let allProductsOnList = this.page.locator('.productinfo > p')
+        await this.page.locator('#search_product').fill(productName);
+        await this.page.locator('#submit_search').click()
+        await expect(this.page.getByRole('heading', { name: 'SEARCHED PRODUCTS', level: 2 })).toBeVisible()
+        expect(await allProductsOnList.count()).toEqual(await allProductsOnList.getByText(productName).count())
+        return allProductsOnList.count()
     }
     async subscribe(email: string) {
-        await expect(this.footer.getByRole('heading', { name: 'Subscription' })).toBeVisible()
-        await this.footer.getByRole('textbox').fill(email)
-        await this.footer.getByRole('button').click()
-        await expect(this.footer.getByText('You have been successfully subscribed!')).toBeVisible()
+        await expect(this.page.getByRole('heading', { name: 'SUBSCRIPTION', level: 2 })).toBeVisible()
+        await this.page.locator('#susbscribe_email').fill(email)
+        await this.page.locator('#subscribe').click()
+        await expect(this.page.locator('#success-subscribe')).toBeVisible()
     }
     async addProductFromList(productPosition: number) {
-        await this.page.locator('xpath=//div[contains(@class, "productinfo")]/a[contains(text(), "Add to cart")]').nth(productPosition).hover()
-        await this.page.locator('xpath=//div[contains(@class, "overlay-content")]/a[contains(text(), "Add to cart")]').nth(productPosition).click()
-        // await this.page.locator(`xpath=//div[contains(@class, "productinfo")]/a`).nth(productPosition).click()
         const itemDetails = {
-            name: String(await this.page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('paragraph').nth(productPosition).textContent()),
-            price: Number((await this.page.locator('xpath=//div[contains(@class, "productinfo")]').getByRole('heading').nth(productPosition).textContent())?.substring(3)),
+            name: String(await this.page.locator('.productinfo > p').nth(productPosition - 1).textContent()),
+            price: Number((await this.page.locator('.productinfo > h2').nth(productPosition - 1).textContent())?.substring(3)),
             quantity: 1
         }
+        await this.page.locator('.productinfo > .add-to-cart').nth(productPosition - 1).click()
+        await expect(this.page.getByRole('link', { name: 'View Cart' })).toBeVisible()
+        await expect(this.page.getByRole('button', { name: 'Continue Shopping' })).toBeVisible()
         return itemDetails
     }
+    async addProductFromRecommended(productPosition: number) {
+        let carouselItem = this.page.locator('#recommended-item-carousel .item.active')
+        const itemPosition = productPosition - 1
+        await expect(this.page.getByRole('heading', { name: 'recommended items' })).toBeVisible()
+        const itemDetails = {
+            name: String(await carouselItem.locator('p').nth(itemPosition).textContent()),
+            price: Number((await carouselItem.locator('h2').nth(itemPosition).textContent())?.substring(3)),
+            quantity: 1
+        }
+        await carouselItem.locator('.add-to-cart').nth(itemPosition).click()
+        return itemDetails
+
+    }
     async addProductFromDetails(quantity: number) {
-        await this.page.locator('xpath=//*[@id="quantity"]').fill(`${quantity}`)
+        await this.page.locator('#quantity').fill(`${quantity}`)
         await this.page.getByRole('button', { name: 'Add to cart' }).click()
         await expect(this.page.getByRole('link', { name: 'View Cart' })).toBeVisible()
+        await expect(this.page.getByRole('button', { name: 'Continue Shopping' })).toBeVisible()
     }
+
     async continueShopping() {
         await this.page.getByRole('button', { name: 'Continue Shopping' }).click()
     }
     async viewCart() {
         await this.page.getByRole('link', { name: 'View Cart' }).click()
     }
-    async checkProductsInCart(items: { name: string, price: number }[]) {
+
+    async checkProductsInCart(items: { name: string, price: number, quantity: number }[]) {
         let i = 0
-        await expect(this.page
-            .getByRole('row')).toHaveCount(items.length + 1)
-        for (const tr of await this.cartProduct.all()) {
-            await expect(tr.locator('xpath=/td[@class="cart_description"]').filter({ hasText: items[i].name })).toBeVisible()
-            await expect(tr.locator('xpath=/td[@class="cart_price"]').filter({ hasText: `${items[i].price}` })).toBeVisible()
-            let count = Number(await tr.locator('xpath=/td[@class="cart_quantity"]').innerText())
-            let totalPrice = Number((await tr.locator('xpath=/td[@class="cart_total"]').innerText()).substring(3))
-            expect(totalPrice).toEqual(items[i].price * count)
+        let cartProducts = this.page.locator('tbody > tr[id]')
+        await expect(cartProducts).toHaveCount(items.length)
+        for (const cartProduct of await cartProducts.all()) {
+            let cartProductDescription = cartProduct.locator('.cart_description').getByRole('heading')
+            let cartProductPrice = Number((await cartProduct.locator('.cart_price').innerText()).substring(3))
+            let cartProductQuantity = Number(await cartProduct.locator('.cart_quantity').innerText())
+            let cartProductTotalPrice = Number((await cartProduct.locator('.cart_total').innerText()).substring(3))
+            await expect(cartProductDescription).toHaveText(items[i].name)
+            expect(cartProductPrice).toEqual(items[i].price)
+            expect(cartProductQuantity).toEqual(items[i].quantity)
+            expect(cartProductTotalPrice).toEqual(items[i].price * items[i].quantity)
             i++
         }
     }
     async proceedToCheckout() {
-        await this.page.getByText('Proceed To Checkout').click()
+        await this.page.locator('.check_out').click()
     }
-    async placeOrder(user: user, item: { name: string, price: number, quantity: number }, description?: string) {
-        let deliveryAddress = this.page.getByRole('list').filter({ hasText: 'delivery address' })
+    async placeOrder(user: user, item: { name: string, price: number, quantity: number }[], description?: string) {
+        let deliveryAddress = this.page.locator('#address_delivery')
+        await expect(deliveryAddress.getByRole('heading', { name: 'YOUR DELIVERY ADDRESS' })).toBeVisible()
         if (user.gender)
-            await expect(deliveryAddress).toContainText(user.gender)
-        await expect(deliveryAddress).toContainText(user.firstName)
-        await expect(deliveryAddress).toContainText(user.lastName)
+            await expect(deliveryAddress.locator('.address_firstname.address_lastname')).toContainText(`${user.gender}`)
+        await expect(deliveryAddress.locator('.address_firstname.address_lastname')).toContainText(`${user.firstName} ${user.lastName}`)
         if (user.company)
-            await expect(deliveryAddress).toContainText(user.company)
-        await expect(deliveryAddress).toContainText(user.address)
+            await expect(deliveryAddress.locator('.address_address1.address_address2').nth(0)).toContainText(user.company)
+        await expect(deliveryAddress.locator('.address_address1.address_address2').nth(1)).toContainText(user.address)
         if (user.address2)
-            await expect(deliveryAddress).toContainText(user.address2)
-        await expect(deliveryAddress).toContainText(user.city)
-        await expect(deliveryAddress).toContainText(user.state)
-        await expect(deliveryAddress).toContainText(user.zipcode)
-        await expect(deliveryAddress).toContainText(user.country)
-        await expect(deliveryAddress).toContainText(`${user.mobileNumber}`)
-        await expect(this.page
-            .locator('xpath=//td[@class="cart_description"]'))
-            .toContainText(`${item.name}`)
-        await expect(this.page
-            .locator('xpath=//td[@class="cart_price"]'))
-            .toContainText(`${item.price}`)
-        await expect(this.page
-            .locator('xpath=//td[@class="cart_quantity"]'))
-            .toContainText(`${item.quantity}`)
-        await expect(this.page
-            .locator('xpath=//td[@class="cart_total"]'))
-            .toContainText(`${item.price * item.quantity}`)
-        await expect(this.page
-            .getByRole('row').last()
-            .locator('xpath=//p[@class="cart_total_price"]'))
-            .toContainText(`${item.price * item.quantity}`)
+            await expect(deliveryAddress.locator('.address_address1.address_address2').nth(2)).toContainText(user.address2)
+        await expect(deliveryAddress.locator('.address_city.address_state_name.address_postcode')).toContainText(`${user.city} ${user.state} ${user.zipcode}`)
+        await expect(deliveryAddress.locator('.address_country_name')).toContainText(user.country)
+        await expect(deliveryAddress.locator('.address_phone')).toContainText(`${user.mobileNumber}`)
+        await this.checkProductsInCart(item)
         if (description)
-            await this.page
-                .locator('#ordermsg')
-                .getByRole('textbox').fill(description)
+            await this.page.locator('textarea[name=message]').fill(description)
         await this.page.getByRole('link', { name: 'place order' }).click()
     }
     //----------------TO FIX!!!!!----------------------//
@@ -320,7 +309,7 @@ export class AutomationTools {
         await this.page.locator('xpath=//*[@data-qa="expiry-month"]').fill(`${paymentData.cardExpirationMonth}`)
         await this.page.locator('xpath=//*[@data-qa="expiry-year"]').fill(`${paymentData.cardExpirationYear}`)
         await this.page.locator('xpath=//*[@data-qa="pay-button"]').click({ noWaitAfter: true })
-        await expect(this.page.locator('xpath=//div[@id="success_message"]')).toBeVisible()
+        await expect(this.page.locator('#success_message')).toBeVisible()
     }
 
     async completeOrder() {
@@ -329,32 +318,30 @@ export class AutomationTools {
     }
     async signupFromCart() {
         await this.page.getByRole('link', { name: 'Register / Login' }).click()
-        await expect(this.page.getByRole('heading', { name: 'New User Signup!' })).toBeVisible()
+        await expect(this.page).toHaveURL('/login')
     }
     async resetBasket() {
-        for (const tr of await this.page.locator('xpath=//tbody/tr').all()) {
-            await tr.locator('xpath=/*[@class="cart_delete"]/a').click()
+        let cartProducts = this.page.locator('tbody > tr[id]')
+        for (const cartProduct of await cartProducts.all()) {
+            await cartProduct.locator('.cart_quantity_delete').click()
         }
-        await expect(this.page.getByText('Cart is empty')).toBeVisible()
+        await expect(this.page.locator('#empty_cart')).toBeVisible()
     }
     async expandCategory(category: string) {
-        await this.page
-            .locator(`xpath=//div[@id="${category}"]/preceding-sibling::div`)
-            .getByRole('link', { name: category })
-            .click()
-        await expect(this.page.locator(`xpath=//div[@id="${category}"]`)).toBeVisible()
+        await this.page.locator(`[href="#${category}"]`).click()
+        await expect(this.page.locator(`#${category}`)).toBeVisible()
     }
     async selectSubCategory(category: string, subcategory: string) {
         await this.expandCategory(category)
-        await this.page.locator(`xpath=//div[@id="${category}"]`).getByRole('link', { name: subcategory }).click()
-        await expect(this.page.locator('xpath=//div[@class="features_items"]').getByRole('heading', { level: 2, name: `${category} - ${subcategory} PRODUCTS` }).first()).toBeVisible()
+        await this.page.locator(`#${category}`).getByRole('link', { name: subcategory }).click()
+        await expect(this.page.locator('.features_items').getByRole('heading', { level: 2, name: `${category} - ${subcategory} PRODUCTS` }).first()).toBeVisible()
     }
     async selectBrand(brand: string) {
-        await this.page.locator('xpath=//div[@class="brands-name"]').getByRole('link', { name: brand }).click()
-        await expect(this.page.locator('xpath=//div[@class="features_items"]').getByRole('heading', { level: 2, name: `BRAND - ${brand} PRODUCTS` }).first()).toBeVisible()
+        await this.page.locator('.brands-name').getByRole('link', { name: brand }).click()
+        await expect(this.page.locator('.features_items').getByRole('heading', { level: 2, name: `BRAND - ${brand} PRODUCTS` }).first()).toBeVisible()
     }
     async addEveryProductFromList(productName: string) {
-        const items: { name: any, price: any }[] = []
+        const items: { name: string, price: number, quantity: number }[] = []
         let productCount = await this.searchForProduct(productName)
         for (let i = 0; i < productCount; i++) {
             items.push(await this.addProductFromList(i))
