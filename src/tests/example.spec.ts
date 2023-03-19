@@ -288,3 +288,38 @@ test('Test Case 18: View Category Products', async ({ page }) => {
   await playwrightDev.selectSubCategory("Women", "dress")
   await playwrightDev.selectSubCategory("Men", "tshirts")
 });
+test('Test Case 19: View & Cart Brand Products', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  await playwrightDev.gotoProductsPage()
+  await playwrightDev.selectBrand("Polo")
+  await playwrightDev.selectBrand("Madame")
+});
+test('Test Case 20: Search Products and Verify Cart After Login', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  const credentials = {
+    name: 'TC020Name',
+    email: 'TC020@Email.Address',
+    password: 'zaq1@WSX',
+  }
+  await playwrightDev.gotoProductsPage()
+  let items = await playwrightDev.addEveryProductFromList("Blue")
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.checkProductsInCart(items)
+  await playwrightDev.gotoLoginPage();
+  await playwrightDev.login(credentials)
+  await playwrightDev.gotoCartPage()
+  await playwrightDev.checkProductsInCart(items)
+  await playwrightDev.resetBasket()
+  await playwrightDev.logout(credentials)
+});
+test.only('Test Case 21: Add review on product', async ({ page }) => {
+  const playwrightDev = new AutomationTools(page);
+  const review = {
+    name: 'TC021Name',
+    email: 'TC021@Email.Address',
+    message: 'message message message message message message message message message message message message ',
+  }
+  await playwrightDev.gotoProductsPage()
+  await playwrightDev.viewProduct(1)
+  await playwrightDev.addReview(review)
+});

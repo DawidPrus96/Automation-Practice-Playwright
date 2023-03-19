@@ -10,6 +10,11 @@ interface loginCredentials {
     password: string,
     name?: string,
 }
+interface review {
+    name: string,
+    email: string,
+    message: string,
+}
 interface user {
     name: string,
     email: string,
@@ -83,6 +88,7 @@ export class AutomationTools {
         await this.selectTab('Products')
         await expect(this.page).toHaveURL('/products')
         await expect(this.page.getByRole('heading', { name: 'ALL PRODUCTS', level: 2 })).toBeVisible()
+        await expect(this.page.getByRole('heading', { name: 'BRANDS', level: 2 })).toBeVisible()
     }
     async gotoCartPage() {
         await this.selectTab('Cart')
@@ -207,6 +213,7 @@ export class AutomationTools {
         const response = await this.page.request.get('https://automationexercise.com/static/js/cart.js');
         await expect(response).toBeOK();
         await expect(this.page).toHaveURL(/\/product_details\//)
+        await expect(this.page.getByRole('link', { name: 'WRITE YOUR REVIEW' })).toBeVisible()
         await expect(productDetails.getByRole('heading')).toBeVisible()
         await expect(productDetails.getByText('Category')).toBeVisible()
         await expect(productDetails.getByText('Rs. ')).toBeVisible()
@@ -215,11 +222,13 @@ export class AutomationTools {
         await expect(productDetails.getByText('Brand: ')).toBeVisible()
     }
     async searchForProduct(productName: string) {
-        let allSearchedProducts = this.page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p`).count()
-        let correctSearchedProducts = this.page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p[contains(text(),${new RegExp(productName, "i")})]`).count()
         await this.page.getByPlaceholder('Search Product').fill(productName);
         await this.page.locator('xpath=//button[@id="submit_search"]').click()
-        expect(await allSearchedProducts).toEqual(await correctSearchedProducts)
+        await expect(this.page.locator('xpath=//div[@class="features_items"]').getByRole('heading', { level: 2, name: 'SEARCHED PRODUCTS' }).first()).toBeVisible()
+        let allSearchedProducts = await this.page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p`).count()
+        let correctSearchedProducts = await this.page.locator(`xpath=//div[starts-with(@class, "productinfo")]/p[contains(text(),${new RegExp(productName, "i")})]`).count()
+        expect(allSearchedProducts).toEqual(correctSearchedProducts)
+        return allSearchedProducts
     }
     async subscribe(email: string) {
         await expect(this.footer.getByRole('heading', { name: 'Subscription' })).toBeVisible()
@@ -339,5 +348,25 @@ export class AutomationTools {
         await this.expandCategory(category)
         await this.page.locator(`xpath=//div[@id="${category}"]`).getByRole('link', { name: subcategory }).click()
         await expect(this.page.locator('xpath=//div[@class="features_items"]').getByRole('heading', { level: 2, name: `${category} - ${subcategory} PRODUCTS` }).first()).toBeVisible()
+    }
+    async selectBrand(brand: string) {
+        await this.page.locator('xpath=//div[@class="brands-name"]').getByRole('link', { name: brand }).click()
+        await expect(this.page.locator('xpath=//div[@class="features_items"]').getByRole('heading', { level: 2, name: `BRAND - ${brand} PRODUCTS` }).first()).toBeVisible()
+    }
+    async addEveryProductFromList(productName: string) {
+        const items: { name: any, price: any }[] = []
+        let productCount = await this.searchForProduct(productName)
+        for (let i = 0; i < productCount; i++) {
+            items.push(await this.addProductFromList(i))
+            await this.continueShopping()
+        }
+        return items
+    }
+    async addReview(review: review) {
+        await this.page.locator('#name').fill(review.name)
+        await this.page.locator('#email').fill(review.email)
+        await this.page.locator('#review').fill(review.message)
+        await this.page.locator('#button-review').click()
+        await expect(this.page.getByText('Thank you for your review.')).toBeVisible()
     }
 }
