@@ -59,7 +59,7 @@ export default defineConfig({
       name: 'Automation Exercise API',
       testMatch: /automationexerciseAPI.spec.ts/,
       timeout: 2 * 60 * 60 * 1000,
-      // repeatEach: 10,
+      repeatEach: 10,
       use: {
         baseURL: 'https://automationexercise.com/api/',
         //trace: 'retain-on-failure',
