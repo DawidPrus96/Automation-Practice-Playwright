@@ -76,6 +76,16 @@ export default defineConfig({
         }
       },
     },
+    {
+      name: 'PokeAPI',
+      testMatch: /pokemon.spec.ts/,
+      timeout: 2 * 60 * 60 * 1000,
+      use: {
+        baseURL: 'https://pokeapi.co/api/v2/pokemon/',
+        //trace: 'retain-on-failure',
+        actionTimeout: 10 * 1000,
+      },
+    },
     // {
     //   name: 'firefox',
     //   use: {
