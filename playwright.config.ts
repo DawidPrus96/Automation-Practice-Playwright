@@ -14,6 +14,8 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testMatch: /facebook.spec.ts/,
+      timeout: 2 * 60 * 60 * 1000,
       // repeatEach: 10,
       use: {
         //trace: 'retain-on-failure',
@@ -22,6 +24,49 @@ export default defineConfig({
         actionTimeout: 10 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads',
+          args: [
+            // `--disable-extensions-except=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
+            // `--load-extension=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
+            // `--load-extension=C:/automatyzacja/Automation Practice/Playwright_NodeJS/chrome_ublock.crx`
+          ],
+          headless: false
+        }
+      },
+    },
+    {
+      name: 'Automation Exercise',
+      testMatch: /automationexercise.spec.ts/,
+      timeout: 2 * 60 * 60 * 1000,
+      // repeatEach: 10,
+      use: {
+        //trace: 'retain-on-failure',
+        baseURL: 'https://automationexercise.com/',
+        acceptDownloads: true,
+        ...devices['Desktop Chrome'],
+        actionTimeout: 10 * 1000,
+        launchOptions: {
+          downloadsPath: './src/downloads/automationexercise',
+          args: [
+            // `--disable-extensions-except=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
+            // `--load-extension=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
+            // `--load-extension=C:/automatyzacja/Automation Practice/Playwright_NodeJS/chrome_ublock.crx`
+          ],
+          headless: false
+        }
+      },
+    },
+    {
+      name: 'Automation Exercise API',
+      testMatch: /automationexerciseAPI.spec.ts/,
+      timeout: 2 * 60 * 60 * 1000,
+      // repeatEach: 10,
+      use: {
+        baseURL: 'https://automationexercise.com/api/',
+        //trace: 'retain-on-failure',
+        acceptDownloads: true,
+        actionTimeout: 10 * 1000,
+        launchOptions: {
+          downloadsPath: './src/downloads/automationexercise',
           args: [
             // `--disable-extensions-except=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
             // `--load-extension=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,

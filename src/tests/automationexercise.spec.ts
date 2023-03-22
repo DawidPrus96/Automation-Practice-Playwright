@@ -1,7 +1,6 @@
 // example.spec.ts
 import { test, expect } from '@playwright/test';
 import { AutomationTools } from '../pages/automationtools.page';
-test.use({ baseURL: 'https://automationexercise.com/' })
 test.beforeEach(async ({ page }) => {
   await page.route('**/*', request => {
     return request.request().url().startsWith('https://googleads' || 'https://pagead2' || 'https://maps.googleapis')
