@@ -68,7 +68,9 @@ export class AutomationTools {
 
     async selectTab(tabName: string) {
         await this.page.getByRole('banner')
-            .getByRole('link', { name: tabName }).click()
+            .getByRole('link', { name: tabName }).click({ timeout: 10 * 1000 })
+        const response = await this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/util.js');
+        await expect(response).toBeOK();
     }
     async gotoHomePage() {
         await this.selectTab('Home')
@@ -84,9 +86,7 @@ export class AutomationTools {
     async gotoCartPage() {
         await this.selectTab('Cart')
         await expect(this.page).toHaveURL('/view_cart')
-        const response = await this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/util.js');
-        await expect(response).toBeOK();
-        await expect(this.page.locator('tr').first()).toBeVisible()
+        await expect(this.page.locator('#cart_info')).toBeVisible()
     }
     async gotoLoginPage() {
         await this.selectTab('Signup / Login')
@@ -108,8 +108,6 @@ export class AutomationTools {
         await this.selectTab('Contact us')
         await expect(this.page).toHaveURL('/contact_us')
         await expect(this.page.getByRole('heading', { name: 'GET IN TOUCH', level: 2 })).toBeVisible()
-        const response = await this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/util.js');
-        await expect(response).toBeOK();
     }
     async deleteAccount(credentials: signupCredentials) {
         await expect(this.page.getByText(`Logged in as ${credentials.name}`, { exact: true })).toBeVisible()
@@ -184,12 +182,12 @@ export class AutomationTools {
             dialog.accept();
         });
         if (contactForm.name)
-            await this.page.locator('xpath=//*[@data-qa="name"]').fill(contactForm.name)
-        await this.page.locator('xpath=//*[@data-qa="email"]').fill(contactForm.email)
+            await this.page.locator('xpath=//*[@data-qa="name"]').type(contactForm.name, { delay: 50 })
+        await this.page.locator('xpath=//*[@data-qa="email"]').type(contactForm.email, { delay: 50 })
         if (contactForm.subject)
-            await this.page.locator('xpath=//*[@data-qa="subject"]').fill(contactForm.subject)
+            await this.page.locator('xpath=//*[@data-qa="subject"]').type(contactForm.subject, { delay: 50 })
         if (contactForm.message)
-            await this.page.locator('xpath=//*[@data-qa="message"]').fill(contactForm.message)
+            await this.page.locator('xpath=//*[@data-qa="message"]').type(contactForm.message, { delay: 50 })
         if (contactForm.file)
             await this.page.locator('input[name="upload_file"]').setInputFiles(contactForm.file);
         this.page.locator('xpath=//*[@data-qa="submit-button"]').click()
@@ -204,7 +202,7 @@ export class AutomationTools {
         let productDetails = this.page.locator('.product-information')
         // const response = this.page.request.get('https://automationexercise.com/static/images/home/short_logo.png');
         // await expect(await response).toBeOK();
-        await this.page.getByRole('link', { name: 'view product' }).nth(productPosition - 1).click()
+        await this.page.getByRole('link', { name: 'view product' }).nth(productPosition).click()
         const response = await this.page.request.get('https://automationexercise.com/static/js/cart.js');
         await expect(response).toBeOK();
         await expect(this.page).toHaveURL(/.*product_details/)
@@ -231,19 +229,20 @@ export class AutomationTools {
         await expect(this.page.locator('#success-subscribe')).toBeVisible()
     }
     async addProductFromList(productPosition: number) {
+        await expect(this.page.locator('.productinfo > img').nth(productPosition)).toBeVisible()
         const itemDetails = {
-            name: String(await this.page.locator('.productinfo > p').nth(productPosition - 1).textContent()),
-            price: Number((await this.page.locator('.productinfo > h2').nth(productPosition - 1).textContent())?.substring(3)),
+            name: String(await this.page.locator('.productinfo > p').nth(productPosition).textContent()),
+            price: Number((await this.page.locator('.productinfo > h2').nth(productPosition).textContent())?.substring(3)),
             quantity: 1
         }
-        await this.page.locator('.productinfo > .add-to-cart').nth(productPosition - 1).click()
+        await this.page.locator('.productinfo > .add-to-cart').nth(productPosition).click()
         await expect(this.page.getByRole('link', { name: 'View Cart' })).toBeVisible()
         await expect(this.page.getByRole('button', { name: 'Continue Shopping' })).toBeVisible()
         return itemDetails
     }
     async addProductFromRecommended(productPosition: number) {
         let carouselItem = this.page.locator('#recommended-item-carousel .item.active')
-        const itemPosition = productPosition - 1
+        const itemPosition = productPosition
         await expect(this.page.getByRole('heading', { name: 'recommended items' })).toBeVisible()
         const itemDetails = {
             name: String(await carouselItem.locator('p').nth(itemPosition).textContent()),
@@ -284,8 +283,14 @@ export class AutomationTools {
             i++
         }
     }
-    async proceedToCheckout() {
+    async proceedToCheckoutLogged() {
         await this.page.locator('.check_out').click()
+        await expect(this.page.getByRole('heading', { name: 'YOUR DELIVERY ADDRESS' })).toBeVisible()
+        await expect(this.page.getByRole('heading', { name: 'YOUR BILLING ADDRESS' })).toBeVisible()
+    }
+    async proceedToCheckoutNotLogged() {
+        await this.page.locator('.check_out').click()
+        await expect(this.page.getByRole('link', { name: 'Register / Login' })).toBeVisible()
     }
     async checkAddress(addressType: Locator, user: user) {
         if (user.gender)
@@ -322,7 +327,7 @@ export class AutomationTools {
         await this.page.locator('xpath=//*[@data-qa="expiry-month"]').fill(`${paymentData.cardExpirationMonth}`)
         await this.page.locator('xpath=//*[@data-qa="expiry-year"]').fill(`${paymentData.cardExpirationYear}`)
         await this.page.locator('xpath=//*[@data-qa="pay-button"]').click({ noWaitAfter: true })
-        await expect(this.page.locator('#success_message')).toBeVisible()
+        await expect(this.page.getByText('Your order has been placed successfully!')).toBeVisible()
         await expect(this.page.getByRole('heading', { name: 'Order placed' })).toBeVisible()
     }
     async downloadInvoice() {
@@ -337,11 +342,17 @@ export class AutomationTools {
         await expect(this.page).toHaveURL('/login')
     }
     async resetBasket() {
-        let cartProductsCount = await this.page.locator('tbody > tr[id]').count()
-        for (let i = 0; i <= cartProductsCount; i++) {
-            await this.page.locator('tbody > tr[id]').locator('.cart_quantity_delete').first().click()
+        try {
+            await expect(this.page.locator('#empty_cart')).toBeVisible({ timeout: 5 * 1000 })
         }
-        await expect(this.page.locator('#empty_cart')).toBeVisible()
+        catch {
+            const cartProducts = this.page.locator('tr[id]')
+            while (await cartProducts.count()) {
+                await this.page.locator('tr[id] > td.cart_delete > a').first().click()
+                await expect(cartProducts).toHaveCount(await cartProducts.count() - 1)
+            }
+            await expect(this.page.locator('#empty_cart')).toBeVisible()
+        }
     }
     async expandCategory(category: string) {
         await this.page.locator(`[href="#${category}"]`).click()

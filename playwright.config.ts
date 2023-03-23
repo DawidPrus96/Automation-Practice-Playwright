@@ -31,7 +31,7 @@ export default defineConfig({
       name: 'Automation Exercise',
       testMatch: /automationexercise.spec.ts/,
       timeout: 5 * 60 * 1000,
-      retries: 4,
+      retries: 2,
       expect: {
         timeout: 15 * 1000
       },
