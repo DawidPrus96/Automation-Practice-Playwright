@@ -4,7 +4,7 @@ import { AutomationTools } from '../pages/testautomationpractice.page';
 test.beforeEach(async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveURL('/')
-    await page.locator('#cookieChoiceDismiss').click()
+    //await page.locator('#cookieChoiceDismiss').click()
     await expect(page.getByRole('heading', { name: 'Automation Testing Practice', level: 1 })).toBeVisible()
 })
 test.describe('Wikipedia', () => {
