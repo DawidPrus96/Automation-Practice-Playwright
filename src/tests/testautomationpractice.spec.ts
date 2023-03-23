@@ -47,7 +47,7 @@ test.describe('Alert', () => {
     });
 })
 test.describe('Date Picker', () => {
-    test.only('Select date from calendar', async ({ page }) => {
+    test('Select date from calendar', async ({ page }) => {
         const date = new Date("2019-09-01");
         const playwrightDev = new AutomationTools(page);
         await playwrightDev.pickDate(date)
