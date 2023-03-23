@@ -3,14 +3,14 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './src/tests',
   fullyParallel: true,
-  retries: 2,
+  retries: 1,
   workers: 3,
   reporter: 'html',
 
   projects: [
     {
       name: 'facebook',
-      testMatch: /NIEDLAGITHUBA.spec.ts/,
+      testMatch: /NIEGOTOWEfacebook.spec.ts/,
       timeout: 60 * 60 * 1000,
       expect: {
         timeout: 5 * 1000
@@ -23,14 +23,15 @@ export default defineConfig({
         actionTimeout: 10 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads',
-          headless: false
+          headless: true
         }
       },
     },
     {
       name: 'Automation Exercise',
-      testMatch: /NIEDLAGITHUBAautomationexercise.spec.ts/,
+      testMatch: /automationexercise.spec.ts/,
       timeout: 5 * 60 * 1000,
+      retries: 4,
       expect: {
         timeout: 15 * 1000
       },
@@ -43,7 +44,7 @@ export default defineConfig({
         actionTimeout: 10 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads/automationexercise',
-          headless: false
+          headless: true
         }
       },
     },
@@ -86,7 +87,7 @@ export default defineConfig({
         actionTimeout: 5 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads/testautomationpractice',
-          headless: false
+          headless: true
         }
       },
     },
