@@ -86,6 +86,7 @@ export class AutomationTools {
         await expect(this.page).toHaveURL('/view_cart')
         const response = await this.page.request.get('https://maps.google.com/maps-api-v3/api/js/52/5/util.js');
         await expect(response).toBeOK();
+        await expect(this.page.locator('tr').first()).toBeVisible()
     }
     async gotoLoginPage() {
         await this.selectTab('Signup / Login')
@@ -336,9 +337,9 @@ export class AutomationTools {
         await expect(this.page).toHaveURL('/login')
     }
     async resetBasket() {
-        let cartProducts = this.page.locator('tbody > tr[id]')
-        for (const cartProduct of await cartProducts.all()) {
-            await cartProduct.locator('.cart_quantity_delete').click()
+        let cartProductsCount = await this.page.locator('tbody > tr[id]').count()
+        for (let i = 0; i <= cartProductsCount; i++) {
+            await this.page.locator('tbody > tr[id]').locator('.cart_quantity_delete').first().click()
         }
         await expect(this.page.locator('#empty_cart')).toBeVisible()
     }
