@@ -2,20 +2,19 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './src/tests',
-  timeout: 90 * 1000,
-  expect: {
-    timeout: 20 * 1000
-  },
   fullyParallel: true,
-  //retries: 3,
+  retries: 2,
   workers: 3,
   reporter: 'html',
 
   projects: [
     {
-      name: 'chromium',
-      testMatch: /facebook.spec.ts/,
-      timeout: 2 * 60 * 60 * 1000,
+      name: 'facebook',
+      testMatch: /NIEDLAGITHUBA.spec.ts/,
+      timeout: 60 * 60 * 1000,
+      expect: {
+        timeout: 5 * 1000
+      },
       // repeatEach: 10,
       use: {
         //trace: 'retain-on-failure',
@@ -24,19 +23,17 @@ export default defineConfig({
         actionTimeout: 10 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads',
-          args: [
-            // `--disable-extensions-except=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
-            // `--load-extension=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
-            // `--load-extension=C:/automatyzacja/Automation Practice/Playwright_NodeJS/chrome_ublock.crx`
-          ],
           headless: false
         }
       },
     },
     {
       name: 'Automation Exercise',
-      testMatch: /automationexercise.spec.ts/,
-      timeout: 2 * 60 * 60 * 1000,
+      testMatch: /NIEDLAGITHUBAautomationexercise.spec.ts/,
+      timeout: 5 * 60 * 1000,
+      expect: {
+        timeout: 15 * 1000
+      },
       // repeatEach: 10,
       use: {
         //trace: 'retain-on-failure',
@@ -46,11 +43,6 @@ export default defineConfig({
         actionTimeout: 10 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads/automationexercise',
-          args: [
-            // `--disable-extensions-except=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
-            // `--load-extension=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
-            // `--load-extension=C:/automatyzacja/Automation Practice/Playwright_NodeJS/chrome_ublock.crx`
-          ],
           headless: false
         }
       },
@@ -58,32 +50,44 @@ export default defineConfig({
     {
       name: 'Automation Exercise API',
       testMatch: /automationexerciseAPI.spec.ts/,
-      timeout: 2 * 60 * 60 * 1000,
-      repeatEach: 10,
+      timeout: 2 * 60 * 1000,
+      expect: {
+        timeout: 5 * 1000
+      },
+      //repeatEach: 10,
       use: {
         baseURL: 'https://automationexercise.com/api/',
-        //trace: 'retain-on-failure',
-        acceptDownloads: true,
-        actionTimeout: 10 * 1000,
-        launchOptions: {
-          downloadsPath: './src/downloads/automationexercise',
-          args: [
-            // `--disable-extensions-except=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
-            // `--load-extension=C:/Users/Dawid/AppData/Local/Google/Chrome/User Data/Default/Extensions/cjpalhdlnbpafiamejdnhcphjbkeiagm/1.47.4_0`,
-            // `--load-extension=C:/automatyzacja/Automation Practice/Playwright_NodeJS/chrome_ublock.crx`
-          ],
-          headless: false
-        }
+        actionTimeout: 5 * 1000,
       },
     },
     {
       name: 'PokeAPI',
       testMatch: /pokemon.spec.ts/,
-      timeout: 2 * 60 * 60 * 1000,
+      timeout: 15 * 60 * 1000,
       use: {
         baseURL: 'https://pokeapi.co/api/v2/pokemon/',
         //trace: 'retain-on-failure',
-        actionTimeout: 10 * 1000,
+        actionTimeout: 5 * 1000,
+      },
+    },
+    {
+      name: 'Test Automation Practice',
+      testMatch: /testautomationpractice.spec.ts/,
+      timeout: 90 * 1000,
+      expect: {
+        timeout: 5 * 1000
+      },
+      // repeatEach: 10,
+      use: {
+        //trace: 'retain-on-failure',
+        baseURL: 'https://testautomationpractice.blogspot.com/',
+        acceptDownloads: true,
+        ...devices['Desktop Chrome'],
+        actionTimeout: 5 * 1000,
+        launchOptions: {
+          downloadsPath: './src/downloads/testautomationpractice',
+          headless: false
+        }
       },
     },
     // {
