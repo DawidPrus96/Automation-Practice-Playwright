@@ -11,7 +11,7 @@ export class AutomationTools {
         this.page = page;
         this.locWiki = page.locator('#Wikipedia1')
         this.locAlert = page.locator('#HTML9')
-        this.locDatePickerInput = page.locator('#HTML5')
+        this.locDatePickerInput = page.locator('#HTML5').getByRole('textbox')
         this.locDatePickerCalendar = page.locator('#ui-datepicker-div')
 
         // this.getStartedLink = page.locator('a', { hasText: 'Get started' });
@@ -64,7 +64,7 @@ export class AutomationTools {
     async pickDate(date: Date) {
         let today = new Date()
         let clicks = (today.getFullYear() - date.getFullYear()) * 12 + (today.getMonth() - date.getMonth())
-        await this.locDatePickerInput.getByRole('textbox').click()
+        await this.locDatePickerInput.click()
         if (clicks > 0) {
             for (let i = 0; i < clicks; i++) {
                 await this.locDatePickerCalendar.locator('a').filter({ hasText: 'Prev' }).click()
@@ -76,10 +76,18 @@ export class AutomationTools {
             }
         }
         await this.locDatePickerCalendar.getByRole('link', { name: `${date.getUTCDate()}`, exact: true }).click()
-        await this.locDatePickerInput.getByRole('textbox').click()
+        await this.locDatePickerInput.click()
         await expect(this.locDatePickerCalendar
             .locator(`td[data-month="${date.getUTCMonth()}"][data-year="${date.getFullYear()}"] > .ui-state-active`)
-            .getByText(`${date.getUTCDate()}`))
+            .getByText(`${date.getUTCDate()}`, { exact: true }))
+            .toBeVisible()
+    }
+    async inputDate(date: Date) {
+        await this.locDatePickerInput.click()
+        await this.locDatePickerInput.type(`${date.getUTCMonth() + 1}/${date.getUTCDate()}/${date.getFullYear()}`)
+        await expect(this.locDatePickerCalendar
+            .locator(`td[data-month="${date.getUTCMonth()}"][data-year="${date.getFullYear()}"] > .ui-state-active`)
+            .getByText(`${date.getUTCDate()}`, { exact: true }))
             .toBeVisible()
     }
 }
