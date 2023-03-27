@@ -7,12 +7,16 @@ export class AutomationTools {
     readonly locAlert: Locator;
     readonly locDatePickerInput: Locator;
     readonly locDatePickerCalendar: Locator;
+    readonly locTable: Locator;
+    readonly locTableRow: Locator;
     constructor(page: Page) {
         this.page = page;
         this.locWiki = page.locator('#Wikipedia1')
         this.locAlert = page.locator('#HTML9')
         this.locDatePickerInput = page.locator('#HTML5').getByRole('textbox')
         this.locDatePickerCalendar = page.locator('#ui-datepicker-div')
+        this.locTable = page.locator('#HTML1')
+        this.locTableRow = this.locTable.getByRole('row').filter({ has: this.page.locator('td') })
 
         // this.getStartedLink = page.locator('a', { hasText: 'Get started' });
         // this.gettingStartedHeader = page.locator('h1', { hasText: 'Installation' });
@@ -89,5 +93,33 @@ export class AutomationTools {
             .locator(`td[data-month="${date.getUTCMonth()}"][data-year="${date.getFullYear()}"] > .ui-state-active`)
             .getByText(`${date.getUTCDate()}`, { exact: true }))
             .toBeVisible()
+    }
+    async getTable() {
+        // const items: {}[] = []
+        const table = {
+            items: new Array(),
+            sumPrice: 0,
+            levels: new Set(),
+            languages: new Set(),
+        }
+        for (const row of await this.locTableRow.all()) {
+            const cell = row.getByRole('cell')
+            const bookName = String(await cell.nth(0).textContent())
+            const author = String(await cell.nth(1).textContent())
+            const subject = String(await cell.nth(2).textContent())
+            const price = Number(await cell.nth(3).textContent())
+
+            table.items.push({
+                BookName: bookName,
+                Author: author,
+                Subject: subject,
+                Price: price,
+            })
+            table.sumPrice += price
+            table.levels.add(bookName.split(' ').pop())
+            table.languages.add(bookName.split(' ').shift())
+        }
+        return table
+        // for ()
     }
 }

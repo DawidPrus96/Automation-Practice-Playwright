@@ -48,47 +48,45 @@ test.describe('Alert', () => {
 })
 test.describe('Date Picker', () => {
     test('Select date from calendar', async ({ page }) => {
-        const date = new Date("2019-09-01");
         const playwrightDev = new AutomationTools(page);
+        const date = new Date("2019-09-01");
         await playwrightDev.pickDate(date)
     });
     test('Input date into textbox', async ({ page }) => {
-        const date = new Date("2019-09-02");
         const playwrightDev = new AutomationTools(page);
+        const date = new Date("2019-09-02");
         await playwrightDev.inputDate(date)
     });
 })
 test.describe('Dropdowns', () => {
     test('Speeds', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#speed').selectOption('Medium')
     });
     test('Files by value', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#files').selectOption('3')
     });
     test('Files by label', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#files').selectOption({ label: 'DOC file' })
     });
     test('Numbers', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#number').selectOption('3')
     });
     test('Products by value', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#products').selectOption('Iphone')
     });
     test('Products by label', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#products').selectOption({ label: 'Yahoo' })
     });
     test('Animals by value', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#animals').selectOption('babycat')
     });
     test('Animals by label', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
         await page.locator('#animals').selectOption({ label: 'Baby Cat' })
+    });
+})
+test.describe('Table', () => {
+    test('Table', async ({ page }) => {
+        const playwrightDev = new AutomationTools(page);
+        console.log(await playwrightDev.getTable())
     });
 })
