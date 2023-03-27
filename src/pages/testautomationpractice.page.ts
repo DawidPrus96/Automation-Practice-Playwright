@@ -2,39 +2,74 @@
 import { expect, Page, Locator } from '@playwright/test';
 export class AutomationTools {
     readonly page: Page;
-    readonly websocket: WebSocket;
-    readonly locWiki: Locator;
-    readonly locAlert: Locator;
-    readonly locDatePickerInput: Locator;
-    readonly locDatePickerCalendar: Locator;
-    readonly locTable: Locator;
-    readonly locTableRow: Locator;
+    // readonly LWiki: Locator;
+    // readonly LAlert: Locator;
+    // readonly LDatePickerInput: Locator;
+    // readonly LDatePickerCalendar: Locator;
+    // readonly LTable: Locator;
+    // readonly LTableRow: Locator;
+    // readonly LDoubleClickField1: Locator;
+    // readonly LDoubleClickField2: Locator;
+    // readonly LDoubleClickButton: Locator;
+    readonly LMainHeader: Locator
+    readonly LWiki: Locator
+    readonly LAlert: Locator
+    readonly LDatePicker: Locator
+    readonly LSelectMenu: Locator
+    readonly LTextLabels: Locator
+    readonly LXPathAxes: Locator
+    readonly LDoubleClick: Locator
+    readonly LDoubleClickField1: Locator
+    readonly LDoubleClickField2: Locator
+    readonly LDoubleClickButton: Locator
+    readonly LDragAndDropText: Locator
+    readonly LDragAndDropImages: Locator
+    readonly LSlider: Locator
+    readonly LResizable: Locator
+    readonly LTable: Locator
+    readonly LTooltips: Locator
+    readonly LBarCodes: Locator
+    readonly LQRCode: Locator
+    readonly LDatePickerInput: Locator
+    readonly LDatePickerCalendar: Locator
+    readonly LTableRow: Locator
     constructor(page: Page) {
         this.page = page;
-        this.locWiki = page.locator('#Wikipedia1')
-        this.locAlert = page.locator('#HTML9')
-        this.locDatePickerInput = page.locator('#HTML5').getByRole('textbox')
-        this.locDatePickerCalendar = page.locator('#ui-datepicker-div')
-        this.locTable = page.locator('#HTML1')
-        this.locTableRow = this.locTable.getByRole('row').filter({ has: this.page.locator('td') })
-
-        // this.getStartedLink = page.locator('a', { hasText: 'Get started' });
-        // this.gettingStartedHeader = page.locator('h1', { hasText: 'Installation' });
-        // this.pomLink = page.locator('li', { hasText: 'Guides' }).locator('a', { hasText: 'Page Object Model' });
-        // this.tocList = page.locator('article div.markdown ul > li > a');
+        this.LMainHeader = page.locator('#Header1')
+        this.LWiki = page.locator('#Wikipedia1')
+        this.LAlert = page.locator('#HTML9')
+        this.LDatePicker = page.locator('#HTML5')
+        this.LSelectMenu = page.locator('#HTML6')
+        this.LTextLabels = page.locator('#Text1')
+        this.LXPathAxes = page.locator('#HTML14')
+        this.LDoubleClick = page.locator('#HTML10')
+        this.LDoubleClickField1 = this.LDoubleClick.locator('#field1')
+        this.LDoubleClickField2 = this.LDoubleClick.locator('#field2')
+        this.LDoubleClickButton = this.LDoubleClick.getByRole('button')
+        this.LDragAndDropText = page.locator('#HTML2')
+        this.LDragAndDropImages = page.locator('#HTML11')
+        this.LSlider = page.locator('#HTML7')
+        this.LResizable = page.locator('#HTML3')
+        this.LTable = page.locator('#HTML1')
+        this.LTableRow = this.LTable.getByRole('row').filter({ has: this.page.locator('td') })
+        this.LTooltips = page.locator('#HTML8')
+        this.LBarCodes = page.locator('#HTML12')
+        this.LQRCode = page.locator('#HTML4')
+        this.LDatePickerCalendar = page.locator('#ui-datepicker-div')
+        this.LDatePickerInput = this.LDatePicker.getByRole('textbox')
     }
     async searchWikipediaPhrase(phrase: string) {
-        await this.locWiki.getByRole('textbox').fill(phrase)
-        await this.locWiki.getByRole('button').click()
+        await this.LWiki.getByRole('textbox').fill(phrase)
+        await this.LWiki.getByRole('button').click()
         if (!phrase)
-            await expect(this.locWiki.getByText('Please enter text to search.')).toBeVisible()
+            await expect(this.LWiki.getByText('Please enter text to search.')).toBeVisible()
         else
-            await expect(this.locWiki.getByText('Search results')).toBeVisible()
-        return await this.locWiki.locator('#Wikipedia1_wikipedia-search-results').getByRole('link').count()
+            await expect(this.LWiki.getByText('Search results')).toBeVisible()
+        return await this.LWiki.locator('#Wikipedia1_wikipedia-search-results').getByRole('link').count()
     }
     async GoToFirstWikipediaArticle() {
         const wikipagePromise = this.page.waitForEvent('popup');
-        const article = this.locWiki
+        const article = this.LWiki
             .locator('#Wikipedia1_wikipedia-search-results')
             .getByRole('link')
             .first()
@@ -46,7 +81,7 @@ export class AutomationTools {
     }
     async GoToMoreWikipediaResults(phrase: string) {
         const wikipagePromise = this.page.waitForEvent('popup');
-        const more = this.locWiki.getByRole('link', { name: 'more' })
+        const more = this.LWiki.getByRole('link', { name: 'more' })
         await more.click();
         const wikipage = await wikipagePromise;
         await wikipage.waitForLoadState();
@@ -59,50 +94,49 @@ export class AutomationTools {
             else
                 dialog.dismiss()
         });
-        await this.locAlert.getByRole('button', { name: 'Click Me' }).click()
+        await this.LAlert.getByRole('button', { name: 'Click Me' }).click()
         if (accept)
-            await this.locAlert.getByText('You pressed OK!').click()
+            await this.LAlert.getByText('You pressed OK!').click()
         else
-            await this.locAlert.getByText('You pressed Cancel!').click()
+            await this.LAlert.getByText('You pressed Cancel!').click()
     }
     async pickDate(date: Date) {
         let today = new Date()
         let clicks = (today.getFullYear() - date.getFullYear()) * 12 + (today.getMonth() - date.getMonth())
-        await this.locDatePickerInput.click()
+        await this.LDatePickerInput.click()
         if (clicks > 0) {
             for (let i = 0; i < clicks; i++) {
-                await this.locDatePickerCalendar.locator('a').filter({ hasText: 'Prev' }).click()
+                await this.LDatePickerCalendar.locator('a').filter({ hasText: 'Prev' }).click()
             }
         }
         else {
             for (let i = 0; i < Math.abs(clicks); i++) {
-                await this.locDatePickerCalendar.locator('a').filter({ hasText: 'Next' }).click()
+                await this.LDatePickerCalendar.locator('a').filter({ hasText: 'Next' }).click()
             }
         }
-        await this.locDatePickerCalendar.getByRole('link', { name: `${date.getUTCDate()}`, exact: true }).click()
-        await this.locDatePickerInput.click()
-        await expect(this.locDatePickerCalendar
+        await this.LDatePickerCalendar.getByRole('link', { name: `${date.getUTCDate()}`, exact: true }).click()
+        await this.LDatePickerInput.click()
+        await expect(this.LDatePickerCalendar
             .locator(`td[data-month="${date.getUTCMonth()}"][data-year="${date.getFullYear()}"] > .ui-state-active`)
             .getByText(`${date.getUTCDate()}`, { exact: true }))
             .toBeVisible()
     }
     async inputDate(date: Date) {
-        await this.locDatePickerInput.click()
-        await this.locDatePickerInput.type(`${date.getUTCMonth() + 1}/${date.getUTCDate()}/${date.getFullYear()}`)
-        await expect(this.locDatePickerCalendar
+        await this.LDatePickerInput.click()
+        await this.LDatePickerInput.type(`${date.getUTCMonth() + 1}/${date.getUTCDate()}/${date.getFullYear()}`)
+        await expect(this.LDatePickerCalendar
             .locator(`td[data-month="${date.getUTCMonth()}"][data-year="${date.getFullYear()}"] > .ui-state-active`)
             .getByText(`${date.getUTCDate()}`, { exact: true }))
             .toBeVisible()
     }
     async getTable() {
-        // const items: {}[] = []
         const table = {
             items: new Array(),
             sumPrice: 0,
             levels: new Set(),
             languages: new Set(),
         }
-        for (const row of await this.locTableRow.all()) {
+        for (const row of await this.LTableRow.all()) {
             const cell = row.getByRole('cell')
             const bookName = String(await cell.nth(0).textContent())
             const author = String(await cell.nth(1).textContent())
@@ -120,6 +154,16 @@ export class AutomationTools {
             table.languages.add(bookName.split(' ').shift())
         }
         return table
-        // for ()
+    }
+    async fillField1(text: string) {
+        await this.LDoubleClickField1.fill(text)
+    }
+    async fillField2(text: string) {
+        await this.LDoubleClickField2.fill(text)
+    }
+    async DragAndDropText() {
+        await this.LDragAndDropText.locator('#draggable').dragTo(this.LDragAndDropText.locator('#droppable'));
+        await expect(this.LDragAndDropText.locator('#droppable.ui-state-highlight')).toBeVisible()
+        await expect(this.LDragAndDropText.locator('#droppable')).toHaveText('Dropped!')
     }
 }
