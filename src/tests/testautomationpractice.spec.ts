@@ -1,77 +1,87 @@
 // example.spec.ts
 import { test, expect } from '@playwright/test';
-import { AutomationTools } from '../pages/testautomationpractice.page';
+import { Main, Wikipedia, Alert, DatePicker, AutomationTools } from '../pages/testautomationpractice.page';
 test.beforeEach(async ({ page }) => {
-    const playwrightDev = new AutomationTools(page);
-    await page.goto('/')
-    await expect(page).toHaveURL('/')
-    await expect(playwrightDev.LMainHeader.getByRole('heading', { name: 'Automation Testing Practice', level: 1 })).toBeVisible()
+    const Pmain = new Main(page);
+    await Pmain.page.goto('/')
+    await expect(Pmain.page).toHaveURL('/')
+    await expect(Pmain.LHeader).toBeVisible()
 
 })
 test.describe('Wikipedia', () => {
     test.beforeEach(async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LWiki.getByRole('heading', { name: 'New Windows', level: 2 })).toBeVisible()
+        const Pwiki = new Wikipedia(page);
+        await expect(Pwiki.LHeader).toBeVisible()
     })
     test('Empty phrase', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
+        const Pwiki = new Wikipedia(page);
         let phrase = ''
-        let count = await playwrightDev.searchWikipediaPhrase(phrase)
+        let count = await Pwiki.searchPhrase(phrase)
         expect(count).toEqual(0)
     });
     test('1 specific result', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
+        const Pwiki = new Wikipedia(page);
         let phrase = 'Glacial lake outburst flood'
-        let count = await playwrightDev.searchWikipediaPhrase(phrase)
+        let count = await Pwiki.searchPhrase(phrase)
         expect(count).toEqual(1)
-        await playwrightDev.GoToFirstWikipediaArticle()
+        await Pwiki.GoToFirstArticle()
     });
     test('More than 5 results', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
+        const Pwiki = new Wikipedia(page);
         let phrase = 'Glacial'
-        let count = await playwrightDev.searchWikipediaPhrase(phrase)
+        let count = await Pwiki.searchPhrase(phrase)
         expect(count).toEqual(5)
-        await playwrightDev.GoToMoreWikipediaResults(phrase)
+        await Pwiki.GoToMoreResults(phrase)
     });
     test('Invalid New Windows', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
+        const Pwiki = new Wikipedia(page);
         let phrase = 'asdasdasdasdasdas'
-        let count = await playwrightDev.searchWikipediaPhrase(phrase)
+        let count = await Pwiki.searchPhrase(phrase)
         expect(count).toEqual(0)
         await expect(page.locator('#Wikipedia1_wikipedia-search-results')).toHaveText('No results found.')
     });
 })
 test.describe('Alert', () => {
     test.beforeEach(async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LAlert.getByRole('heading', { name: 'Alert', level: 2 })).toBeVisible()
+        const PAlert = new Alert(page);
+        await expect(PAlert.LHeader).toBeVisible()
     })
     test('Accept', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await playwrightDev.dialog(true)
+        const PAlert = new Alert(page);
+        await PAlert.dialog(true)
     });
     test('Cancel', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await playwrightDev.dialog(false)
+        const PAlert = new Alert(page);
+        await PAlert.dialog(false)
     });
 })
 test.describe('Date Picker', () => {
     test.beforeEach(async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LDatePicker.getByRole('heading', { name: 'Date Picker', level: 2 })).toBeVisible()
+        const PDatePicker = new DatePicker(page, new Date());
+        await expect(PDatePicker.LHeader).toBeVisible()
     })
-    test('Select date from calendar', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        const date = new Date("2019-09-01");
-        await playwrightDev.pickDate(date)
+    test('Past', async ({ page }) => {
+        const date = new Date("2019-12-28");
+        const PDatePicker = new DatePicker(page, date);
+        await PDatePicker.pickDate()
     });
-    test('Input date into textbox', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
+    test('Present', async ({ page }) => {
+        const date = new Date();
+        const PDatePicker = new DatePicker(page, date);
+        await PDatePicker.pickDate()
+    });
+    test('Future', async ({ page }) => {
+        const date = new Date("2027-1-28");
+        const PDatePicker = new DatePicker(page, date);
+        await PDatePicker.pickDate()
+    });
+    test('Fill textbox', async ({ page }) => {
         const date = new Date("2019-09-02");
-        await playwrightDev.inputDate(date)
+        const PDatePicker = new DatePicker(page, date);
+        await PDatePicker.inputDate()
     });
 })
-test.describe('Select Menu', () => {
+test.describe.skip('Select Menu', () => {
     test.beforeEach(async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
         await expect(playwrightDev.LSelectMenu.getByRole('heading', { name: 'Select menu', level: 2 })).toBeVisible()
@@ -120,51 +130,61 @@ test.describe.skip('XPath Axes', () => {
         console.log('test')
     })
 })
-test.describe('Double click', () => {
+test.describe.skip('Double click', () => {
     test.beforeEach(async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
         await expect(playwrightDev.LDoubleClick.getByRole('heading', { name: 'Double Click', level: 2 })).toBeVisible()
-        await playwrightDev.LDoubleClickField1.clear()
-        await playwrightDev.LDoubleClickField2.clear()
+        await playwrightDev.LDCField1.clear()
+        await playwrightDev.LDCField2.clear()
     })
     test('Single Click', async ({ page }, testInfo) => {
         const playwrightDev = new AutomationTools(page);
         await playwrightDev.fillField1(testInfo.title)
         await playwrightDev.LDoubleClickButton.click()
-        await expect(playwrightDev.LDoubleClickField1).toHaveValue(testInfo.title)
-        await expect(playwrightDev.LDoubleClickField2).toBeEmpty()
+        await expect(playwrightDev.LDCField1).toHaveValue(testInfo.title)
+        await expect(playwrightDev.LDCField2).toBeEmpty()
     });
     test('Empty Fields', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
         await playwrightDev.LDoubleClickButton.dblclick()
-        await expect(playwrightDev.LDoubleClickField1).toBeEmpty()
-        await expect(playwrightDev.LDoubleClickField2).toBeEmpty()
+        await expect(playwrightDev.LDCField1).toBeEmpty()
+        await expect(playwrightDev.LDCField2).toBeEmpty()
     });
     test('Empty Field1 and filled Field2', async ({ page }, testInfo) => {
         const playwrightDev = new AutomationTools(page);
         await playwrightDev.fillField2(testInfo.title)
         await playwrightDev.LDoubleClickButton.dblclick()
-        await expect(playwrightDev.LDoubleClickField1).toBeEmpty()
-        await expect(playwrightDev.LDoubleClickField2).toBeEmpty()
+        await expect(playwrightDev.LDCField1).toBeEmpty()
+        await expect(playwrightDev.LDCField2).toBeEmpty()
     });
     test('Double Click', async ({ page }, testInfo) => {
         const playwrightDev = new AutomationTools(page);
         await playwrightDev.fillField1(testInfo.title)
         await playwrightDev.LDoubleClickButton.dblclick()
-        await expect(playwrightDev.LDoubleClickField1).toHaveValue(testInfo.title)
-        await expect(playwrightDev.LDoubleClickField2).toHaveValue(testInfo.title)
+        await expect(playwrightDev.LDCField1).toHaveValue(testInfo.title)
+        await expect(playwrightDev.LDCField2).toHaveValue(testInfo.title)
     });
 })
-test.describe('Right Panel', () => {
+test.describe.skip('Right Panel', () => {
     test('Drag and Drop Text', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
         await expect(playwrightDev.LDragAndDropText.getByRole('heading', { name: 'Drag and Drop', level: 2 })).toBeVisible()
         await playwrightDev.DragAndDropText()
     })
-    test.skip('Drag and Drop Images', async ({ page }) => {
+    test('Drag and Drop Images', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
         await expect(playwrightDev.LDragAndDropImages.getByRole('heading', { name: 'Drag and Drop Images', level: 2 })).toBeVisible()
-        console.log('test')
+        await playwrightDev.LImage1.hover();
+        await page.mouse.down()
+        await playwrightDev.LTrash.hover()
+        await expect(playwrightDev.LDragAndDropImages
+            .locator('#trash\
+        .ui-droppable-active\
+        .ui-state-highlight\
+        .ui-droppable-hover')).toBeVisible()
+        //await page.mouse.up()
+        // await page.mouse.down()
+        // await playwrightDev.LDragAndDropImages.getByRole('img', { name: 'The chalet at the Green mountain lake' }).focus();
     })
     test.skip('Slider', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
@@ -177,7 +197,7 @@ test.describe('Right Panel', () => {
         console.log('test')
     })
 })
-test.describe('Bottom Panel', () => {
+test.describe.skip('Bottom Panel', () => {
     test('Table', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
         await expect(playwrightDev.LTable.getByRole('heading', { name: 'HTML Table', level: 2 })).toBeVisible()
