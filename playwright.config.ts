@@ -2,11 +2,14 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './src/tests',
+  snapshotPathTemplate: './src/screenshots/{projectName}/{arg}{ext}',
   fullyParallel: true,
   retries: 1,
   workers: 3,
   reporter: 'html',
-
+  expect: {
+    toHaveScreenshot: { maxDiffPixelRatio: 1, maxDiffPixels: 50 }
+  },
   projects: [
     {
       name: 'facebook',
@@ -76,7 +79,8 @@ export default defineConfig({
       testMatch: /testautomationpractice.spec.ts/,
       timeout: 90 * 1000,
       expect: {
-        timeout: 5 * 1000
+        timeout: 5 * 1000,
+        toHaveScreenshot: { maxDiffPixelRatio: 1, maxDiffPixels: 50 },
       },
       // repeatEach: 10,
       use: {

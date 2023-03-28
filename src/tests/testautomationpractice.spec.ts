@@ -1,6 +1,17 @@
 // example.spec.ts
 import { test, expect } from '@playwright/test';
-import { Main, Wikipedia, Alert, DatePicker, AutomationTools } from '../pages/testautomationpractice.page';
+import {
+    Main,
+    Wikipedia,
+    Alert,
+    DatePicker,
+    SelectMenu,
+    DoubleClick,
+    DragAndDropText,
+    DragAndDropImage,
+    Table,
+    AutomationTools
+} from '../pages/testautomationpractice.page';
 test.beforeEach(async ({ page }) => {
     const Pmain = new Main(page);
     await Pmain.page.goto('/')
@@ -81,35 +92,46 @@ test.describe('Date Picker', () => {
         await PDatePicker.inputDate()
     });
 })
-test.describe.skip('Select Menu', () => {
+test.describe('Select Menu', () => {
     test.beforeEach(async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LSelectMenu.getByRole('heading', { name: 'Select menu', level: 2 })).toBeVisible()
+        const PSelectMenu = new SelectMenu(page);
+        await expect(PSelectMenu.LHeader).toBeVisible()
     })
-
-    test('Speeds', async ({ page }) => {
-        await page.locator('#speed').selectOption('Medium')
+    test('Mid Options by value', async ({ page }) => {
+        const PSelectMenu = new SelectMenu(page);
+        await PSelectMenu.LSpeed.selectOption({ label: 'Medium' })
+        await PSelectMenu.LFile.selectOption('2')
+        await PSelectMenu.LNumber.selectOption({ label: '3' })
+        await PSelectMenu.LProduct.selectOption('Yahoo')
+        await PSelectMenu.LAnimal.selectOption('babycat')
+        await expect(PSelectMenu.LBox).toHaveScreenshot('Mid_Value.png')
     });
-    test('Files by value', async ({ page }) => {
-        await page.locator('#files').selectOption('3')
+    test('Last Options by value', async ({ page }) => {
+        const PSelectMenu = new SelectMenu(page);
+        await PSelectMenu.LSpeed.selectOption({ label: 'Faster' })
+        await PSelectMenu.LFile.selectOption('4')
+        await PSelectMenu.LNumber.selectOption({ label: '5' })
+        await PSelectMenu.LProduct.selectOption('Microsoft')
+        await PSelectMenu.LAnimal.selectOption('avatar')
+        await expect(PSelectMenu.LBox).toHaveScreenshot('Last_Value.png')
     });
-    test('Files by label', async ({ page }) => {
-        await page.locator('#files').selectOption({ label: 'DOC file' })
+    test('Mid Options by label', async ({ page }) => {
+        const PSelectMenu = new SelectMenu(page);
+        await PSelectMenu.LSpeed.selectOption({ label: 'Medium' })
+        await PSelectMenu.LFile.selectOption({ label: 'PDF file' })
+        await PSelectMenu.LNumber.selectOption({ label: '3' })
+        await PSelectMenu.LProduct.selectOption({ label: 'Yahoo' })
+        await PSelectMenu.LAnimal.selectOption({ label: 'Baby Cat' })
+        await expect(PSelectMenu.LBox).toHaveScreenshot('Mid_Label.png')
     });
-    test('Numbers', async ({ page }) => {
-        await page.locator('#number').selectOption('3')
-    });
-    test('Products by value', async ({ page }) => {
-        await page.locator('#products').selectOption('Iphone')
-    });
-    test('Products by label', async ({ page }) => {
-        await page.locator('#products').selectOption({ label: 'Yahoo' })
-    });
-    test('Animals by value', async ({ page }) => {
-        await page.locator('#animals').selectOption('babycat')
-    });
-    test('Animals by label', async ({ page }) => {
-        await page.locator('#animals').selectOption({ label: 'Baby Cat' })
+    test('Last Options by label', async ({ page }) => {
+        const PSelectMenu = new SelectMenu(page);
+        await PSelectMenu.LSpeed.selectOption({ label: 'Faster' })
+        await PSelectMenu.LFile.selectOption({ label: 'Other file' })
+        await PSelectMenu.LNumber.selectOption({ label: '5' })
+        await PSelectMenu.LProduct.selectOption({ label: 'Bing' })
+        await PSelectMenu.LAnimal.selectOption({ label: 'Avatar' })
+        await expect(PSelectMenu.LBox).toHaveScreenshot('Last_Label.png')
     });
 })
 test.describe.skip('Text Labels', () => {
@@ -130,78 +152,76 @@ test.describe.skip('XPath Axes', () => {
         console.log('test')
     })
 })
-test.describe.skip('Double click', () => {
+test.describe('Double click', () => {
     test.beforeEach(async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LDoubleClick.getByRole('heading', { name: 'Double Click', level: 2 })).toBeVisible()
-        await playwrightDev.LDCField1.clear()
-        await playwrightDev.LDCField2.clear()
+        const PDoubleClick = new DoubleClick(page);
+        await expect(PDoubleClick.LHeader).toBeVisible()
+        await PDoubleClick.LField1.clear()
+        await PDoubleClick.LField2.clear()
     })
     test('Single Click', async ({ page }, testInfo) => {
-        const playwrightDev = new AutomationTools(page);
-        await playwrightDev.fillField1(testInfo.title)
-        await playwrightDev.LDoubleClickButton.click()
-        await expect(playwrightDev.LDCField1).toHaveValue(testInfo.title)
-        await expect(playwrightDev.LDCField2).toBeEmpty()
+        const PDoubleClick = new DoubleClick(page);
+        await PDoubleClick.fillField(PDoubleClick.LField1, testInfo.title)
+        await PDoubleClick.LButton.click()
+        await expect(PDoubleClick.LField1).toHaveValue(testInfo.title)
+        await expect(PDoubleClick.LField2).toBeEmpty()
     });
     test('Empty Fields', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await playwrightDev.LDoubleClickButton.dblclick()
-        await expect(playwrightDev.LDCField1).toBeEmpty()
-        await expect(playwrightDev.LDCField2).toBeEmpty()
+        const PDoubleClick = new DoubleClick(page);
+        await PDoubleClick.LButton.dblclick()
+        await expect(PDoubleClick.LField1).toBeEmpty()
+        await expect(PDoubleClick.LField2).toBeEmpty()
     });
     test('Empty Field1 and filled Field2', async ({ page }, testInfo) => {
-        const playwrightDev = new AutomationTools(page);
-        await playwrightDev.fillField2(testInfo.title)
-        await playwrightDev.LDoubleClickButton.dblclick()
-        await expect(playwrightDev.LDCField1).toBeEmpty()
-        await expect(playwrightDev.LDCField2).toBeEmpty()
+        const PDoubleClick = new DoubleClick(page);
+        await PDoubleClick.fillField(PDoubleClick.LField2, testInfo.title)
+        await PDoubleClick.LButton.dblclick()
+        await expect(PDoubleClick.LField1).toBeEmpty()
+        await expect(PDoubleClick.LField2).toBeEmpty()
     });
     test('Double Click', async ({ page }, testInfo) => {
-        const playwrightDev = new AutomationTools(page);
-        await playwrightDev.fillField1(testInfo.title)
-        await playwrightDev.LDoubleClickButton.dblclick()
-        await expect(playwrightDev.LDCField1).toHaveValue(testInfo.title)
-        await expect(playwrightDev.LDCField2).toHaveValue(testInfo.title)
+        const PDoubleClick = new DoubleClick(page);
+        await PDoubleClick.fillField(PDoubleClick.LField1, testInfo.title)
+        await PDoubleClick.LButton.dblclick()
+        await expect(PDoubleClick.LField1).toHaveValue(testInfo.title)
+        await expect(PDoubleClick.LField2).toHaveValue(testInfo.title)
     });
 })
-test.describe.skip('Right Panel', () => {
+test.describe('Right Panel', () => {
     test('Drag and Drop Text', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LDragAndDropText.getByRole('heading', { name: 'Drag and Drop', level: 2 })).toBeVisible()
-        await playwrightDev.DragAndDropText()
+        const PDragAndDropText = new DragAndDropText(page);
+        await expect(PDragAndDropText.LHeader).toBeVisible()
+        await PDragAndDropText.DragAndDrop()
     })
-    test('Drag and Drop Images', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LDragAndDropImages.getByRole('heading', { name: 'Drag and Drop Images', level: 2 })).toBeVisible()
-        await playwrightDev.LImage1.hover();
-        await page.mouse.down()
-        await playwrightDev.LTrash.hover()
-        await expect(playwrightDev.LDragAndDropImages
-            .locator('#trash\
-        .ui-droppable-active\
-        .ui-state-highlight\
-        .ui-droppable-hover')).toBeVisible()
-        //await page.mouse.up()
+    test.skip('Drag 1 image to trash', async ({ page }) => {
+        const PDragAndDropImage = new DragAndDropImage(page);
+        await PDragAndDropImage.DragToTrash(PDragAndDropImage.LImage1)
+        // await page.mouse.down()
+        // await playwrightDev.LDragAndDropImages.getByRole('img', { name: 'The chalet at the Green mountain lake' }).focus();
+    })
+    test.skip('Drag 2 images to trash', async ({ page }) => {
+        const PDragAndDropImage = new DragAndDropImage(page);
+        await PDragAndDropImage.DragToTrash(PDragAndDropImage.LImage1)
+        await PDragAndDropImage.DragToTrash(PDragAndDropImage.LImage2)
         // await page.mouse.down()
         // await playwrightDev.LDragAndDropImages.getByRole('img', { name: 'The chalet at the Green mountain lake' }).focus();
     })
     test.skip('Slider', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LSlider.getByRole('heading', { name: 'Slider', level: 2 })).toBeVisible()
+        await expect(playwrightDev.page.getByRole('heading', { name: 'Slider', level: 2 })).toBeVisible()
         console.log('test')
     })
     test.skip('Resizable', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LResizable.getByRole('heading', { name: 'Resizable', level: 2 })).toBeVisible()
+        await expect(playwrightDev.page.getByRole('heading', { name: 'Resizable', level: 2 })).toBeVisible()
         console.log('test')
     })
 })
-test.describe.skip('Bottom Panel', () => {
+test.describe('Bottom Panel', () => {
     test('Table', async ({ page }) => {
-        const playwrightDev = new AutomationTools(page);
-        await expect(playwrightDev.LTable.getByRole('heading', { name: 'HTML Table', level: 2 })).toBeVisible()
-        console.log(await playwrightDev.getTable())
+        const PTable = new Table(page);
+        await expect(PTable.LHeader).toBeVisible()
+        console.log(await PTable.getTable())
     });
     test.skip('Tooltips', async ({ page }) => {
         const playwrightDev = new AutomationTools(page);
