@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './src/tests',
-  snapshotPathTemplate: './src/screenshots/{projectName}/{arg}{ext}',
+  snapshotPathTemplate: './src/screenshots/{platform}/{projectName}/{arg}{ext}',
   fullyParallel: true,
   retries: 1,
   workers: 3,
