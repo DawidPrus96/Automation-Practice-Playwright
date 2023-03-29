@@ -2,54 +2,54 @@
 import { expect, Page, Locator } from '@playwright/test';
 export class Main {
     readonly page: Page;
-    readonly LHeader: Locator;
+    readonly Header: Locator;
     constructor(page: Page) {
         this.page = page;
-        this.LHeader = page.locator('#Header1').getByRole('heading', { name: 'Automation Testing Practice', level: 1 })
+        this.Header = this.page.locator('#Header1').getByRole('heading', { name: 'Automation Testing Practice', level: 1 })
     }
 }
 
 export class Wikipedia {
     readonly page: Page;
-    readonly LBox: Locator;
-    readonly LHeader: Locator;
-    readonly LButton: Locator;
-    readonly LTextBox: Locator;
-    readonly LResultsHeader: Locator;
-    readonly LResults: Locator;
-    readonly LResult: Locator;
-    readonly LMore: Locator;
+    readonly Box: Locator;
+    readonly Header: Locator;
+    readonly Button: Locator;
+    readonly TextBox: Locator;
+    readonly ResultsHeader: Locator;
+    readonly Results: Locator;
+    readonly Result: Locator;
+    readonly More: Locator;
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#Wikipedia1')
-        this.LTextBox = this.LBox.getByRole('textbox')
-        this.LButton = this.LBox.getByRole('button')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'New Windows', level: 2 })
-        this.LResultsHeader = this.LBox.locator('#Wikipedia1_wikipedia-search-results-header')
-        this.LResults = this.LBox.locator('#Wikipedia1_wikipedia-search-results')
-        this.LResult = this.LBox.locator('#wikipedia-search-result-link')
-        this.LMore = page.locator('#Wikipedia1_wikipedia-search-more').getByRole('link')
+        this.Box = this.page.locator('#Wikipedia1')
+        this.TextBox = this.Box.getByRole('textbox')
+        this.Button = this.Box.getByRole('button')
+        this.Header = this.Box.getByRole('heading', { name: 'New Windows', level: 2 })
+        this.ResultsHeader = this.Box.locator('#Wikipedia1_wikipedia-search-results-header')
+        this.Results = this.Box.locator('#Wikipedia1_wikipedia-search-results')
+        this.Result = this.Box.locator('#wikipedia-search-result-link')
+        this.More = this.page.locator('#Wikipedia1_wikipedia-search-more').getByRole('link')
     }
     async searchPhrase(phrase: string) {
-        await this.LTextBox.fill(phrase)
-        await this.LButton.click()
+        await this.TextBox.fill(phrase)
+        await this.Button.click()
         if (!phrase)
-            await expect(this.LResults).toHaveText('Please enter text to search.')
+            await expect(this.Results).toHaveText('Please enter text to search.')
         else
-            await expect(this.LResultsHeader).toBeVisible()
-        return await this.LResult.count()
+            await expect(this.ResultsHeader).toBeVisible()
+        return await this.Result.count()
     }
     async GoToFirstArticle() {
         const wikipagePromise = this.page.waitForEvent('popup');
-        const phrase = await this.LResult.first().innerText()
-        await this.LResult.first().click()
+        const phrase = await this.Result.first().innerText()
+        await this.Result.first().click()
         const wikipage = await wikipagePromise;
         await wikipage.waitForLoadState();
         await expect(wikipage.locator('#firstHeading')).toHaveText(phrase)
     }
     async GoToMoreResults(phrase: string) {
         const wikipagePromise = this.page.waitForEvent('popup');
-        await this.LMore.click();
+        await this.More.click();
         const wikipage = await wikipagePromise;
         await wikipage.waitForLoadState();
         await expect(wikipage.locator(`input[value="${phrase}"][role="combobox"]`)).toBeVisible()
@@ -64,7 +64,7 @@ export class Alert {
     readonly LMessage: Locator;
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#HTML9')
+        this.LBox = this.page.locator('#HTML9')
         this.LHeader = this.LBox.getByRole('heading', { name: 'Alert', level: 2 })
         this.LButton = this.LBox.getByRole('button')
         this.LMessage = this.LBox.getByRole('paragraph')
@@ -87,91 +87,95 @@ export class Alert {
 export class DatePicker {
     readonly page: Page;
     readonly date: Date;
-    today: Date;
+    today: Date = new Date();
     day: number;
     month: number;
     year: number;
     clicks: number;
-    readonly LBox: Locator;
-    readonly LHeader: Locator;
-    readonly LInput: Locator;
-    readonly LCalendar: Locator;
-    readonly LCalendarDay: Locator;
-    readonly ButtonName: () => string;
-    readonly LButton: Locator;
-    constructor(page: Page, date: Date) {
+    readonly Box: Locator;
+    readonly Header: Locator;
+    readonly Input: Locator;
+    readonly Calendar: Locator;
+    readonly CalendarDay: Locator;
+    readonly ButtonName: () => string = (
+        () => {
+            return (this.clicks > 0) ? 'Prev' : 'Next'
+        });
+    readonly Button: Locator;
+    constructor(page: Page, date: Date = new Date()) {
         this.page = page;
-        this.today = new Date();
-        this.day = date.getUTCDate()
+        this.day = date.getDate()
         this.month = date.getUTCMonth()
         this.year = date.getFullYear()
-        this.LBox = page.locator('#HTML5')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'Date Picker', level: 2 })
-        this.LInput = this.LBox.getByRole('textbox')
-        this.LCalendar = this.page.locator('#ui-datepicker-div')
+        this.Box = this.page.locator('#HTML5')
+        this.Header = this.Box.getByRole('heading', { name: 'Date Picker', level: 2 })
+        this.Input = this.Box.getByRole('textbox')
+        this.Calendar = this.page.locator('#ui-datepicker-div')
         this.clicks = (this.today.getFullYear() - this.year) * 12 + (this.today.getMonth() - this.month)
-        this.ButtonName = (() => {
-            return (this.clicks > 0) ? 'Prev' : 'Next'
-        })
-        this.LButton = this.LCalendar.locator('a').filter({ hasText: `${this.ButtonName()}` })
-        this.LCalendarDay = this.LCalendar.getByRole('cell').filter({ has: page.getByRole('link', { name: `${this.day}`, exact: true }) })
+        // this.ButtonName = (() => {
+        //     return (this.clicks > 0) ? 'Prev' : 'Next'
+        // })
+        this.Button = this.Calendar.locator('a').filter({ hasText: `${this.ButtonName()}` })
+        this.CalendarDay = this.Calendar.getByRole('cell').filter({ has: page.getByRole('link', { name: `${this.day}`, exact: true }) })
     }
     async pickDate() {
-        // console.log(today.getFullYear(), this.year, today.getMonth(), this.month, clicks, isFuture)
-        await this.LInput.click()
+        // console.log(
+        //     `\nToday year/month/day: ${this.today.getFullYear()}/${this.today.getUTCMonth()}/${this.today.getDate()}
+        //      \nChosen Date year/month/day: ${this.year}/${this.month}/${this.day}`)
+        await this.Input.click()
         for (let i = 0; i < Math.abs(this.clicks); i++) {
-            await this.LButton.click()
+            await this.Button.click()
         }
-        await this.LCalendarDay.click()
-        await this.LInput.click()
-        await expect(this.LCalendarDay.getByRole('link')).toHaveClass(/ui-state-active/)
-        await expect(this.LCalendarDay).toHaveAttribute('data-month', `${this.month}`);
-        await expect(this.LCalendarDay).toHaveAttribute('data-year', `${this.year}`);
+        await this.CalendarDay.click()
+        await this.Input.click()
+        await expect(this.CalendarDay.getByRole('link')).toHaveClass(/ui-state-active/)
+        await expect(this.CalendarDay).toHaveAttribute('data-month', `${this.month}`);
+        await expect(this.CalendarDay).toHaveAttribute('data-year', `${this.year}`);
     }
     async inputDate() {
-        await this.LInput.click()
-        await this.LInput.type(`${this.month + 1}/${this.day}/${this.year}`)
-        await expect(this.LCalendarDay.getByRole('link')).toHaveClass(/ui-state-active/)
-        await expect(this.LCalendarDay).toHaveAttribute('data-month', `${this.month}`);
-        await expect(this.LCalendarDay).toHaveAttribute('data-year', `${this.year}`);
+        await this.Input.click()
+        await this.Input.type(`${this.month + 1}/${this.day}/${this.year}`)
+        await expect(this.CalendarDay.getByRole('link')).toHaveClass(/ui-state-active/)
+        await expect(this.CalendarDay).toHaveAttribute('data-month', `${this.month}`);
+        await expect(this.CalendarDay).toHaveAttribute('data-year', `${this.year}`);
     }
 }
 
 export class SelectMenu {
     readonly page: Page;
-    readonly LBox: Locator
-    readonly LHeader: Locator
-    readonly LSpeed: Locator
-    readonly LFile: Locator
-    readonly LNumber: Locator
-    readonly LProduct: Locator
-    readonly LAnimal: Locator
+    readonly Box: Locator
+    readonly Header: Locator
+    readonly Speed: Locator
+    readonly File: Locator
+    readonly Number: Locator
+    readonly Product: Locator
+    readonly Animal: Locator
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#HTML6')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'Select menu', level: 2 })
-        this.LSpeed = this.LBox.locator('#speed')
-        this.LFile = this.LBox.locator('#files')
-        this.LNumber = this.LBox.locator('#number')
-        this.LProduct = this.LBox.locator('#products')
-        this.LAnimal = this.LBox.locator('#animals')
+        this.Box = this.page.locator('#HTML6')
+        this.Header = this.Box.getByRole('heading', { name: 'Select menu', level: 2 })
+        this.Speed = this.Box.locator('#speed')
+        this.File = this.Box.locator('#files')
+        this.Number = this.Box.locator('#number')
+        this.Product = this.Box.locator('#products')
+        this.Animal = this.Box.locator('#animals')
     }
 }
 
 export class DoubleClick {
     readonly page: Page;
-    readonly LBox: Locator
-    readonly LHeader: Locator
-    readonly LField1: Locator
-    readonly LField2: Locator
-    readonly LButton: Locator
+    readonly Box: Locator
+    readonly Header: Locator
+    readonly Field1: Locator
+    readonly Field2: Locator
+    readonly Button: Locator
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#HTML10')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'Double Click', level: 2 })
-        this.LField1 = this.LBox.locator('#field1')
-        this.LField2 = this.LBox.locator('#field2')
-        this.LButton = this.LBox.getByRole('button')
+        this.Box = this.page.locator('#HTML10')
+        this.Header = this.Box.getByRole('heading', { name: 'Double Click', level: 2 })
+        this.Field1 = this.Box.locator('#field1')
+        this.Field2 = this.Box.locator('#field2')
+        this.Button = this.Box.getByRole('button')
     }
     async fillField(field: Locator, text: string) {
         await field.fill(text)
@@ -180,88 +184,155 @@ export class DoubleClick {
 
 export class DragAndDropText {
     readonly page: Page;
-    readonly LBox: Locator;
-    readonly LHeader: Locator;
-    readonly LDrag: Locator;
-    readonly LDrop: Locator
+    readonly Box: Locator;
+    readonly Header: Locator;
+    readonly Drag: Locator;
+    readonly Drop: Locator
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#HTML2')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'Drag and Drop', level: 2 })
-        this.LDrag = this.LBox.locator('#draggable')
-        this.LDrop = this.LBox.locator('#droppable')
+        this.Box = this.page.locator('#HTML2')
+        this.Header = this.Box.getByRole('heading', { name: 'Drag and Drop', level: 2 })
+        this.Drag = this.Box.locator('#draggable')
+        this.Drop = this.Box.locator('#droppable')
     }
     async DragAndDrop() {
-        await this.LDrag.dragTo(this.LDrop);
-        await expect(this.LDrop).toHaveClass(/ui-state-highlight/)
-        await expect(this.LDrop).toHaveText('Dropped!')
+        await this.Drag.dragTo(this.Drop);
+        await expect(this.Drop).toHaveClass(/ui-state-highlight/)
+        await expect(this.Drop).toHaveText('Dropped!')
     }
 }
 
 export class DragAndDropImage {
     readonly page: Page;
-    readonly LBox: Locator
-    readonly LHeader: Locator;
-    readonly LImage1: { header: string, name: string, locator: Locator }
-    readonly LImage2: { header: string, name: string, locator: Locator }
-    readonly LTrash: Locator
+    readonly Box: Locator
+    readonly Header: Locator;
+    readonly Gallery: Locator;
+    readonly GalleryItem: Locator;
+    readonly Trash: Locator;
+    readonly TrashItem: Locator;
+    readonly Delete: Locator;
+    readonly Recycle: Locator;
+    readonly Images: {
+        header: string,
+        alt: string
+    }[] = [
+            {
+                header: 'Mary',
+                alt: 'The chalet at the Green mountain lake'
+            },
+            {
+                header: "Mr John",
+                alt: 'the peaks of high tatras'
+            }
+        ]
     constructor(page: Page) {
         this.page = page
-        this.LBox = page.locator('#HTML11')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'Drag and Drop Images', level: 2 })
-        this.LImage1 = {
-            header: 'Mary',
-            name: 'The chalet at the Green mountain lake',
-            locator: this.LBox.getByRole('img', { name: this.LImage1.name })
-        }
-        this.LImage2 = {
-            header: 'Mary',
-            name: 'the peaks of high tatras',
-            locator: this.LBox.getByRole('img', { name: this.LImage2.name })
-        }
-        this.LTrash = this.LBox.locator('#trash')
+        this.Box = this.page.locator('#HTML11')
+        this.Header = this.Box.getByRole('heading', { name: 'Drag and Drop Images', level: 2 })
+        this.Gallery = this.Box.locator('#gallery')
+        this.GalleryItem = this.Gallery.getByRole('listitem')
+        this.Trash = this.Box.locator('#trash')
+        this.TrashItem = this.Trash.getByRole('listitem')
     }
-    async DragToTrash(image: { header: string, name: string, locator: Locator }) {
-        await image.locator.hover();
+    async dragToTrash(imgPos: number) {
+        const startGalleryCount = await this.GalleryItem.count()
+        const startTrashCount = await this.TrashItem.count()
+        await this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt }).hover();
         await this.page.mouse.down()
-        await this.LTrash.hover()
-        await expect(this.LTrash).toHaveClass(/ui-droppable-active/)
-        await expect(this.LTrash).toHaveClass(/ui-state-highlight/)
-        await expect(this.LTrash).toHaveClass(/ui-droppable-hover/)
+        await this.Trash.hover()
+        await expect(this.Trash).toHaveClass(/ui-droppable-active/)
+        await expect(this.Trash).toHaveClass(/ui-state-highlight/)
+        await expect(this.Trash).toHaveClass(/ui-droppable-hover/)
         await this.page.mouse.up()
-        await expect(this.LTrash.getByRole('img', { name: image.name })).toBeVisible()
+        await expect(this.TrashItem.getByRole('img', { name: this.Images[imgPos].alt })).toBeVisible()
+        await expect(this.GalleryItem).toHaveCount(startGalleryCount - 1)
+        await expect(this.TrashItem).toHaveCount(startTrashCount + 1)
+        await expect(this.Trash).not.toHaveClass(/ui-droppable-active/)
+        await expect(this.Trash).not.toHaveClass(/ui-state-highlight/)
+        await expect(this.Trash).not.toHaveClass(/ui-droppable-hover/)
+    }
+    async dragToGallery(imgPos: number) {
+        const startGalleryCount = await this.GalleryItem.count()
+        const startTrashCount = await this.TrashItem.count()
+        await this.Trash.getByRole('img', { name: this.Images[imgPos].alt }).hover();
+        await this.page.mouse.down()
+        await this.Gallery.hover()
+        await expect(this.Gallery).toHaveClass(/ui-droppable-active/)
+        await expect(this.Gallery).toHaveClass(/custom-state-active/)
+        await expect(this.Gallery).toHaveClass(/ui-droppable-hover/)
+        await this.page.mouse.up()
+        await expect(this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt })).toBeVisible()
+        await expect(this.TrashItem).toHaveCount(startTrashCount - 1)
+        await expect(this.GalleryItem).toHaveCount(startGalleryCount + 1)
+        await expect(this.GalleryItem
+            .filter({ hasText: this.Images[imgPos].header })
+            .getByRole('link', { name: 'Delete image' }))
+            .toBeVisible();
+        await expect(this.Gallery).not.toHaveClass(/ui-droppable-active/)
+        await expect(this.Gallery).not.toHaveClass(/custom-state-active/)
+        await expect(this.Gallery).not.toHaveClass(/ui-droppable-hover/)
+    }
+    async clickToGallery(imgPos: number) {
+        const startGalleryCount = await this.GalleryItem.count()
+        const startTrashCount = await this.TrashItem.count()
+        await this.TrashItem
+            .filter({ hasText: this.Images[imgPos].header })
+            .getByRole('link', { name: 'Recycle image' }).click();
+        await expect(this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt })).toBeVisible()
+        await expect(this.TrashItem).toHaveCount(startTrashCount - 1)
+        await expect(this.GalleryItem).toHaveCount(startGalleryCount + 1)
+        await expect(this.Trash).not.toHaveClass(/ui-droppable-active/)
+        await expect(this.Trash).not.toHaveClass(/ui-state-highlight/)
+        await expect(this.Trash).not.toHaveClass(/ui-droppable-hover/)
+        await expect(this.GalleryItem
+            .filter({ hasText: this.Images[imgPos].header })
+            .getByRole('link', { name: 'Delete image' }))
+            .toBeVisible();
+    }
+    async clickToTrash(imgPos: number) {
+        const startGalleryCount = await this.GalleryItem.count()
+        const startTrashCount = await this.TrashItem.count()
+        await this.GalleryItem
+            .filter({ hasText: this.Images[imgPos].header })
+            .getByRole('link', { name: 'Delete image' }).click();
+        await expect(this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt })).toBeVisible()
+        await expect(this.GalleryItem).toHaveCount(startGalleryCount - 1)
+        await expect(this.TrashItem).toHaveCount(startTrashCount + 1)
+        await expect(this.Trash).not.toHaveClass(/ui-droppable-active/)
+        await expect(this.Trash).not.toHaveClass(/ui-state-highlight/)
+        await expect(this.Trash).not.toHaveClass(/ui-droppable-hover/)
     }
 }
 export class Slider {
     readonly page: Page;
-    readonly LBox: Locator
-    readonly LHeader: Locator;
+    readonly Box: Locator
+    readonly Header: Locator;
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#HTML7')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'Slider', level: 2 })
+        this.Box = page.locator('#HTML7')
+        this.Header = this.Box.getByRole('heading', { name: 'Slider', level: 2 })
     }
 }
 export class Resizable {
     readonly page: Page;
-    readonly LBox: Locator
-    readonly LHeader: Locator;
+    readonly Box: Locator
+    readonly Header: Locator;
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#HTML3')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'Resizable', level: 2 })
+        this.Box = page.locator('#HTML3')
+        this.Header = this.Box.getByRole('heading', { name: 'Resizable', level: 2 })
     }
 }
 export class Table {
     readonly page: Page;
-    readonly LBox: Locator
-    readonly LHeader: Locator;
-    readonly LRow: Locator;
+    readonly Box: Locator
+    readonly Header: Locator;
+    readonly Row: Locator;
     constructor(page: Page) {
         this.page = page;
-        this.LBox = page.locator('#HTML1')
-        this.LHeader = this.LBox.getByRole('heading', { name: 'LRow', level: 2 })
-        this.LRow = this.LBox.getByRole('row').filter({ has: this.page.locator('td') })
+        this.Box = page.locator('#HTML1')
+        this.Header = this.Box.getByRole('heading', { name: 'HTML Table', level: 2 })
+        this.Row = this.Box.getByRole('row').filter({ has: this.page.locator('td') })
     }
     async getTable() {
         const table = {
@@ -270,7 +341,7 @@ export class Table {
             levels: new Set(),
             languages: new Set(),
         }
-        for (const row of await this.LRow.all()) {
+        for (const row of await this.Row.all()) {
             const cell = row.getByRole('cell')
             const bookName = String(await cell.nth(0).textContent())
             const author = String(await cell.nth(1).textContent())
