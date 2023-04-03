@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@cliqz/adblocker-playwright": "^1.26.2",
+    "csv-parse": "^5.3.6",
+    "dotenv": "^16.0.3",
     "playwright": "^1.32.0"
   }
 }

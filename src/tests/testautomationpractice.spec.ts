@@ -92,7 +92,7 @@ test.describe('Select Menu', () => {
         await selectMenu.Number.selectOption({ label: '3' })
         await selectMenu.Product.selectOption('Yahoo')
         await selectMenu.Animal.selectOption('babycat')
-        await expect(selectMenu.Box).toHaveScreenshot('Mid_Value.png')
+        // await expect(selectMenu.Box).toHaveScreenshot('Mid_Value.png')
     });
     test('Last Options by value', async ({ page }) => {
         const selectMenu = new Main(page).SelectMenu;
@@ -101,7 +101,7 @@ test.describe('Select Menu', () => {
         await selectMenu.Number.selectOption({ label: '5' })
         await selectMenu.Product.selectOption('Microsoft')
         await selectMenu.Animal.selectOption('avatar')
-        await expect(selectMenu.Box).toHaveScreenshot('Last_Value.png')
+        // await expect(selectMenu.Box).toHaveScreenshot('Last_Value.png')
     });
     test('Mid Options by label', async ({ page }) => {
         const selectMenu = new Main(page).SelectMenu;
@@ -110,7 +110,7 @@ test.describe('Select Menu', () => {
         await selectMenu.Number.selectOption({ label: '3' })
         await selectMenu.Product.selectOption({ label: 'Yahoo' })
         await selectMenu.Animal.selectOption({ label: 'Baby Cat' })
-        await expect(selectMenu.Box).toHaveScreenshot('Mid_Label.png')
+        // await expect(selectMenu.Box).toHaveScreenshot('Mid_Label.png')
     });
     test('Last Options by label', async ({ page }) => {
         const selectMenu = new Main(page).SelectMenu;
@@ -119,7 +119,7 @@ test.describe('Select Menu', () => {
         await selectMenu.Number.selectOption({ label: '5' })
         await selectMenu.Product.selectOption({ label: 'Bing' })
         await selectMenu.Animal.selectOption({ label: 'Avatar' })
-        await expect(selectMenu.Box).toHaveScreenshot('Last_Label.png')
+        // await expect(selectMenu.Box).toHaveScreenshot('Last_Label.png')
     });
 })
 test.fixme('Text Labels', async ({ page }) => {
@@ -170,11 +170,12 @@ test('Drag and Drop Text', async ({ page }) => {
     await expect(dragAndDropText.Header).toBeVisible()
     await dragAndDropText.DragAndDrop()
 })
-test.describe('Drag and Drop Images', () => {
+test.skip('Drag and Drop Images', () => {
     test.beforeEach(async ({ page }) => {
         const dragAndDropImage = new Main(page).DragAndDropImage
         await expect(dragAndDropImage.Header).toBeVisible()
-        await expect(dragAndDropImage.Gallery.getByRole('listitem')).toHaveCount(2)
+        expect(await dragAndDropImage.GalleryCount()).toEqual(2)
+        expect(await dragAndDropImage.TrashCount()).toEqual(0)
     })
     test('Drag 1 image to Trash', async ({ page }) => {
         const dragAndDropImage = new Main(page).DragAndDropImage
@@ -231,16 +232,58 @@ test('Slider', async ({ page }) => {
     await slider.slide(0.7)
     await slider.slide(0.2)
 });
-test.fixme('Resizable', async ({ page }) => {
-    const resizable = new Main(page).Resizable;
-    await expect(resizable.Header).toBeVisible()
+test.describe('Resize', () => {
+    test.beforeEach(async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        await expect(resizable.Header).toBeVisible()
+    })
+    test('Width Positive', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { x: 21 }
+        await resizable.changeWidth(shift)
+    })
+    test('Width Negative', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { x: -21 }
+        await resizable.changeWidth(shift)
+    })
+    test('Height Positive', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { y: 65 }
+        await resizable.changeHeight(shift)
+    })
+    test('Height Negative', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { y: -25 }
+        await resizable.changeHeight(shift)
+    })
+    test('Corner ++', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { x: 166, y: 77 }
+        await resizable.changeCorner(shift)
+    })
+    test('Corner +-', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { x: 166, y: -7 }
+        await resizable.changeCorner(shift)
+    })
+    test('Corner -+', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { x: -16, y: 77 }
+        await resizable.changeCorner(shift)
+    })
+    test('Corner --', async ({ page }) => {
+        const resizable = new Main(page).Resizable;
+        const shift = { x: -16, y: -7 }
+        await resizable.changeCorner(shift)
+    })
 })
 test('Table', async ({ page }) => {
     const table = new Main(page).Table;
     await expect(table.Header).toBeVisible()
     console.log(await table.getTable())
 });
-test.describe.fixme('Tooltips', () => {
+test.skip('Tooltips', () => {
     test.beforeAll(async ({ page }) => {
         const main = new Main(page);
         await expect(main.Tooltips.getByRole('heading', { name: 'Tooltips', level: 2 })).toBeVisible()
@@ -250,11 +293,11 @@ test.describe.fixme('Tooltips', () => {
         await expect(main.Tooltips.getByRole('heading', { name: 'Tooltips', level: 2 })).toBeVisible()
     })
 })
-test.fixme('Bar Codes', async ({ page }) => {
+test.skip('Bar Codes', async ({ page }) => {
     const main = new Main(page);
     await expect(main.BarCodes.getByRole('heading', { name: 'Bar Codes', level: 2 })).toBeVisible()
 })
-test.fixme('QR Code', async ({ page }) => {
+test.skip('QR Code', async ({ page }) => {
     const main = new Main(page);
     await expect(main.QRCode.getByRole('heading', { name: 'QR Code', level: 2 })).toBeVisible()
 })

@@ -1,11 +1,14 @@
 // playwright-dev-page.ts
 import { expect, Page, Locator } from '@playwright/test';
+type Shift = {
+    x: number,
+    y: number
+}
 export class Main {
     readonly page: Page;
     readonly Header: Locator;
     readonly Wikipedia: Wikipedia;
     readonly Alert: Alert;
-    readonly DatePicker: DatePicker;
     readonly SelectMenu: SelectMenu;
     readonly Table: Table;
     readonly DoubleClick: DoubleClick;
@@ -26,7 +29,6 @@ export class Main {
         this.Header = this.page.locator('#Header1').getByRole('heading', { name: 'Automation Testing Practice', level: 1 });
         this.Wikipedia = new Wikipedia(page)
         this.Alert = new Alert(page)
-        this.DatePicker = new DatePicker(page)
         this.SelectMenu = new SelectMenu(page)
         this.Table = new Table(page)
         this.DoubleClick = new DoubleClick(page)
@@ -236,40 +238,47 @@ export class DragAndDropText {
 }
 
 export class DragAndDropImage {
-    readonly page: Page;
-    readonly Box: Locator
-    readonly Header: Locator;
-    readonly Gallery: Locator;
-    readonly GalleryItem: Locator;
-    readonly Trash: Locator;
-    readonly TrashItem: Locator;
-    readonly Delete: Locator;
-    readonly Recycle: Locator;
-    readonly Images: {
-        header: string,
-        alt: string
-    }[] = [
-            {
-                header: 'Mary',
-                alt: 'The chalet at the Green mountain lake'
-            },
-            {
-                header: "Mr John",
-                alt: 'the peaks of high tatras'
-            }
-        ]
+    private readonly page: Page;
+    private readonly Box: Locator
+    public readonly Header: Locator;
+    private readonly Gallery: Locator;
+    private readonly GalleryItem: Locator;
+    public readonly GalleryCount: () => Promise<number>;
+    private readonly Trash: Locator;
+    private readonly TrashItem: Locator;
+    public readonly TrashCount: () => Promise<number>;
+    private readonly GalleryToTrashButton: (imgPos: number) => Locator;
+    private readonly TrashToGalleryButton: (imgPos: number) => Locator;
+    private readonly Images: { header: string, alt: string }[]
     constructor(page: Page) {
         this.page = page
-        this.Box = this.page.locator('#HTML11')
+        this.Box = page.locator('#HTML11')
         this.Header = this.Box.getByRole('heading', { name: 'Drag and Drop Images', level: 2 })
         this.Gallery = this.Box.locator('#gallery')
         this.GalleryItem = this.Gallery.getByRole('listitem')
+        this.GalleryCount = () => this.GalleryItem.count()
         this.Trash = this.Box.locator('#trash')
         this.TrashItem = this.Trash.getByRole('listitem')
+        this.TrashCount = () => this.Trash.getByRole('listitem').count()
+        this.Images = [
+            { header: 'Mary', alt: 'The chalet at the Green mountain lake' },
+            { header: "Mr John", alt: 'the peaks of high tatras' }
+        ]
+        this.GalleryToTrashButton = (imgPos: number) => {
+            return this.Gallery
+                .filter({ hasText: this.Images[imgPos].header })
+                .getByRole('link', { name: 'Delete image' })
+        }
+        this.TrashToGalleryButton = (imgPos: number) => {
+            return this.Trash
+                .filter({ hasText: this.Images[imgPos].header })
+                .getByRole('link', { name: 'Recycle image' })
+        }
     }
     async dragToTrash(imgPos: number) {
-        const startGalleryCount = await this.GalleryItem.count()
-        const startTrashCount = await this.TrashItem.count()
+        const startGalleryCount = await this.GalleryCount()
+        const startTrashCount = await this.TrashCount()
+        expect(startGalleryCount).toBeGreaterThan(0)
         await this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt }).hover();
         await this.page.mouse.down()
         await this.Trash.hover()
@@ -287,6 +296,7 @@ export class DragAndDropImage {
     async dragToGallery(imgPos: number) {
         const startGalleryCount = await this.GalleryItem.count()
         const startTrashCount = await this.TrashItem.count()
+        expect(startTrashCount).toBeGreaterThan(0)
         await this.Trash.getByRole('img', { name: this.Images[imgPos].alt }).hover();
         await this.page.mouse.down()
         await this.Gallery.hover()
@@ -297,10 +307,7 @@ export class DragAndDropImage {
         await expect(this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt })).toBeVisible()
         await expect(this.TrashItem).toHaveCount(startTrashCount - 1)
         await expect(this.GalleryItem).toHaveCount(startGalleryCount + 1)
-        await expect(this.GalleryItem
-            .filter({ hasText: this.Images[imgPos].header })
-            .getByRole('link', { name: 'Delete image' }))
-            .toBeVisible();
+        await expect(this.GalleryToTrashButton(imgPos)).toBeVisible();
         await expect(this.Gallery).not.toHaveClass(/ui-droppable-active/)
         await expect(this.Gallery).not.toHaveClass(/custom-state-active/)
         await expect(this.Gallery).not.toHaveClass(/ui-droppable-hover/)
@@ -308,9 +315,7 @@ export class DragAndDropImage {
     async clickToGallery(imgPos: number) {
         const startGalleryCount = await this.GalleryItem.count()
         const startTrashCount = await this.TrashItem.count()
-        await this.TrashItem
-            .filter({ hasText: this.Images[imgPos].header })
-            .getByRole('link', { name: 'Recycle image' }).click();
+        await this.TrashToGalleryButton(imgPos).click()
         await expect(this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt })).toBeVisible()
         await expect(this.TrashItem).toHaveCount(startTrashCount - 1)
         await expect(this.GalleryItem).toHaveCount(startGalleryCount + 1)
@@ -325,9 +330,7 @@ export class DragAndDropImage {
     async clickToTrash(imgPos: number) {
         const startGalleryCount = await this.GalleryItem.count()
         const startTrashCount = await this.TrashItem.count()
-        await this.GalleryItem
-            .filter({ hasText: this.Images[imgPos].header })
-            .getByRole('link', { name: 'Delete image' }).click();
+        await this.GalleryToTrashButton(imgPos).click()
         await expect(this.GalleryItem.getByRole('img', { name: this.Images[imgPos].alt })).toBeVisible()
         await expect(this.GalleryItem).toHaveCount(startGalleryCount - 1)
         await expect(this.TrashItem).toHaveCount(startTrashCount + 1)
@@ -366,10 +369,51 @@ export class Resizable {
     readonly page: Page;
     readonly Box: Locator
     readonly Header: Locator;
+    private readonly BoxWidth: number = 150;
+    private readonly BoxHeight: number = 150;
+    private readonly ResizeWidth: Locator;
+    private readonly ResizeHeight: Locator;
+    private readonly ResizeCorner: Locator;
     constructor(page: Page) {
         this.page = page;
         this.Box = page.locator('#HTML3')
         this.Header = this.Box.getByRole('heading', { name: 'Resizable', level: 2 })
+        this.ResizeWidth = this.Box.locator('.ui-resizable-e')
+        this.ResizeHeight = this.Box.locator('.ui-resizable-s')
+        this.ResizeCorner = this.Box.locator('.ui-resizable-se')
+    }
+    async changeWidth(shift: Pick<Shift, 'x'>) {
+        await this.ResizeWidth.dragTo(this.ResizeWidth, {
+            force: true,
+            sourcePosition: { x: 0, y: 0 },
+            targetPosition: {
+                x: shift.x,
+                y: 0,
+            }
+        })
+        await expect(this.page.locator('#resizable')).toHaveAttribute('style', `width: ${shift.x + this.BoxWidth}px;`)
+    }
+    async changeHeight(shift: Pick<Shift, 'y'>) {
+        await this.ResizeHeight.dragTo(this.ResizeHeight, {
+            force: true,
+            sourcePosition: { x: 0, y: 0 },
+            targetPosition: {
+                x: 0,
+                y: shift.y,
+            }
+        })
+        await expect(this.page.locator('#resizable')).toHaveAttribute('style', `height: ${shift.y + this.BoxHeight}px;`)
+    }
+    async changeCorner(shift: Shift) {
+        await this.ResizeCorner.dragTo(this.ResizeCorner, {
+            force: true,
+            sourcePosition: { x: 0, y: 0 },
+            targetPosition: {
+                x: shift.x,
+                y: shift.y,
+            }
+        })
+        await expect(this.page.locator('#resizable')).toHaveAttribute('style', `width: ${shift.x + this.BoxWidth}px; height: ${shift.y + this.BoxHeight}px;`)
     }
 }
 export class Table {
