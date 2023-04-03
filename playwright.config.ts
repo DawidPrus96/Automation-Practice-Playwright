@@ -96,6 +96,25 @@ export default defineConfig({
         }
       },
     },
+    {
+      name: 'UI Testing Playground',
+      testMatch: /uitestingplayground.spec.ts/,
+      timeout: 90 * 1000,
+      expect: {
+        timeout: 5 * 1000,
+      },
+      retries: 0,
+      use: {
+        baseURL: 'http://uitestingplayground.com/',
+        acceptDownloads: true,
+        ...devices['Desktop Chrome'],
+        actionTimeout: 5 * 1000,
+        launchOptions: {
+          downloadsPath: './src/downloads/uitestingplayground',
+          headless: true
+        }
+      },
+    },
     // {
     //   name: 'firefox',
     //   use: {
