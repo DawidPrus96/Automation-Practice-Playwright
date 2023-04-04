@@ -3,115 +3,82 @@ import dotenv from 'dotenv';
 
 export default defineConfig({
   testDir: './src/tests',
+  timeout: 90 * 1000,
   snapshotPathTemplate: './src/screenshots/{platform}/{projectName}/{arg}{ext}',
   fullyParallel: true,
   retries: 1,
   workers: 3,
   reporter: 'html',
   expect: {
-    toHaveScreenshot: { maxDiffPixelRatio: 1, maxDiffPixels: 50 }
+    toHaveScreenshot: { maxDiffPixelRatio: 1, maxDiffPixels: 50 },
+    timeout: 5 * 1000,
+  },
+  use: {
+    acceptDownloads: true,
+    ...devices['Desktop Chrome'],
+    actionTimeout: 5 * 1000,
+    launchOptions: {
+      headless: true,
+    }
   },
   projects: [
-    {
-      name: 'facebook',
-      testMatch: /NIEGOTOWEfacebook.spec.ts/,
-      timeout: 60 * 60 * 1000,
-      expect: {
-        timeout: 5 * 1000
-      },
-      // repeatEach: 10,
-      use: {
-        //trace: 'retain-on-failure',
-        acceptDownloads: true,
-        ...devices['Desktop Chrome'],
-        actionTimeout: 10 * 1000,
-        launchOptions: {
-          downloadsPath: './src/downloads',
-          headless: true
-        }
-      },
-    },
     {
       name: 'Automation Exercise',
       testMatch: /automationexercise.spec.ts/,
       timeout: 5 * 60 * 1000,
-      retries: 2,
       expect: {
         timeout: 15 * 1000
       },
-      // repeatEach: 10,
       use: {
-        //trace: 'retain-on-failure',
         baseURL: 'https://automationexercise.com/',
-        acceptDownloads: true,
-        ...devices['Desktop Chrome'],
-        actionTimeout: 10 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads/automationexercise',
-          headless: true
         }
       },
     },
     {
       name: 'Automation Exercise API',
       testMatch: /automationexerciseAPI.spec.ts/,
-      timeout: 2 * 60 * 1000,
-      expect: {
-        timeout: 5 * 1000
-      },
-      //repeatEach: 10,
       use: {
         baseURL: 'https://automationexercise.com/api/',
-        actionTimeout: 5 * 1000,
       },
     },
     {
       name: 'PokeAPI',
       testMatch: /pokemon.spec.ts/,
-      timeout: 15 * 60 * 1000,
+      timeout: 10 * 60 * 1000,
       use: {
         baseURL: 'https://pokeapi.co/api/v2/pokemon/',
-        //trace: 'retain-on-failure',
-        actionTimeout: 5 * 1000,
       },
     },
     {
       name: 'Test Automation Practice',
       testMatch: /testautomationpractice.spec.ts/,
-      timeout: 90 * 1000,
-      expect: {
-        timeout: 5 * 1000,
-        toHaveScreenshot: { maxDiffPixelRatio: 1, maxDiffPixels: 50 },
-      },
-      // repeatEach: 10,
       use: {
-        //trace: 'retain-on-failure',
         baseURL: 'https://testautomationpractice.blogspot.com/',
-        acceptDownloads: true,
-        ...devices['Desktop Chrome'],
-        actionTimeout: 5 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads/testautomationpractice',
-          headless: true
         }
       },
     },
     {
       name: 'UI Testing Playground',
       testMatch: /uitestingplayground.spec.ts/,
-      timeout: 90 * 1000,
-      expect: {
-        timeout: 5 * 1000,
-      },
-      retries: 0,
       use: {
         baseURL: 'http://uitestingplayground.com/',
-        acceptDownloads: true,
-        ...devices['Desktop Chrome'],
-        actionTimeout: 5 * 1000,
         launchOptions: {
           downloadsPath: './src/downloads/uitestingplayground',
-          headless: true
+        }
+      },
+    },
+    {
+      name: 'Practical Exercises',
+      testMatch: /practicalexercises.spec.ts/,
+      retries: 0,
+      use: {
+        baseURL: 'https://exercises.test-design.org/',
+        launchOptions: {
+          downloadsPath: './src/downloads/practicalexercises',
         }
       },
     },
