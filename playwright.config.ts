@@ -24,13 +24,14 @@ export default defineConfig({
   projects: [
     {
       name: 'Automation Exercise',
-      testMatch: /automationexercise.spec.ts/,
+      testDir: './src/tests/Automation Exercise',
       timeout: 5 * 60 * 1000,
       expect: {
         timeout: 15 * 1000
       },
       use: {
         baseURL: 'https://automationexercise.com/',
+        testIdAttribute: 'data-qa',
         launchOptions: {
           downloadsPath: './src/downloads/automationexercise',
         }
